@@ -26,7 +26,10 @@ public class SettingsPanel extends Table {
     private Slider brightnessSlider;
     private CheckBoxDi musicMuteCheck;
     private CheckBoxDi sfxMuteCheck;
-    private TextBtn resetBtn;
+    private TextBtn resetMusicBtn;
+    private TextBtn resetSfxBtn;
+    private TextBtn resetBrightnessBtn;
+    private TextBtn resetAllBtn;
     private SettingsController controller;
     private InputProcessor previousInputProcessor;
 
@@ -52,14 +55,17 @@ public class SettingsPanel extends Table {
         Label musicVolLabel = new Label("Music Volume", UIManager.getSkin(), "Text");
         musicVolumeSlider = new Slider(0f, 1f, 0.05f, false, UIManager.getSkin(), "slider");
         musicVolumeSlider.setValue(settings.getMusicVolume());
+        resetMusicBtn = new TextBtn("RESET", -200f);
 
         Label sfxVolLabel = new Label("SFX Volume", UIManager.getSkin(), "Text");
         sfxVolumeSlider = new Slider(0f, 1f, 0.05f, false, UIManager.getSkin(), "slider");
         sfxVolumeSlider.setValue(settings.getSfxVolume());
+        resetSfxBtn = new TextBtn("RESET", -200f);
 
         Label brightnessLabel = new Label("Brightness", UIManager.getSkin(), "Text");
         brightnessSlider = new Slider(0.2f, 1.5f, 0.05f, false, UIManager.getSkin(), "slider");
         brightnessSlider.setValue(settings.getBrightness());
+        resetBrightnessBtn = new TextBtn("RESET", -200f);
 
         musicMuteCheck = new CheckBoxDi("Mute Music", "Disabled");
         musicMuteCheck.setChecked(settings.isMusicMute());
@@ -67,20 +73,23 @@ public class SettingsPanel extends Table {
         sfxMuteCheck = new CheckBoxDi("Mute SFX", "Disabled");
         sfxMuteCheck.setChecked(settings.isSfxMute());
 
-        resetBtn = new TextBtn("RESET TO DEFAULT", -200f);
+        resetAllBtn = new TextBtn("RESET ALL TO DEFAULT", -100f);
 
         bodyTable.add(musicVolLabel).left().padRight(20f).padBottom(10f);
-        bodyTable.add(musicVolumeSlider).left().width(350f).padBottom(10f).row();
+        bodyTable.add(musicVolumeSlider).left().width(350f).padRight(20f).padBottom(10f);
+        bodyTable.add(resetMusicBtn).padBottom(10f).row();
 
         bodyTable.add(sfxVolLabel).left().padRight(20f).padBottom(10f);
-        bodyTable.add(sfxVolumeSlider).left().width(350f).padBottom(10f).row();
+        bodyTable.add(sfxVolumeSlider).left().width(350f).padRight(20f).padBottom(10f);
+        bodyTable.add(resetSfxBtn).padBottom(10f).row();
 
         bodyTable.add(brightnessLabel).left().padRight(20f).padBottom(20f);
-        bodyTable.add(brightnessSlider).left().width(350f).padBottom(20f).row();
+        bodyTable.add(brightnessSlider).left().width(350f).padRight(20f).padBottom(20f);
+        bodyTable.add(resetBrightnessBtn).padBottom(20f).row();
 
-        bodyTable.add(musicMuteCheck).left().padBottom(15f).colspan(2).row();
-        bodyTable.add(sfxMuteCheck).left().padBottom(30f).colspan(2).row();
-        bodyTable.add(resetBtn).center().colspan(2).padTop(10f).row();
+        bodyTable.add(musicMuteCheck).left().padBottom(15f).colspan(3).row();
+        bodyTable.add(sfxMuteCheck).left().padBottom(30f).colspan(3).row();
+        bodyTable.add(resetAllBtn).center().colspan(3).padTop(10f).row();
 
         mainPanel.setBody(bodyTable);
         this.add(mainPanel).expand().fill();
@@ -129,5 +138,8 @@ public class SettingsPanel extends Table {
     public Slider getBrightnessSlider() { return brightnessSlider; }
     public CheckBoxDi getMusicMuteCheck() { return musicMuteCheck; }
     public CheckBoxDi getSfxMuteCheck() { return sfxMuteCheck; }
-    public TextBtn getResetBtn() { return resetBtn; }
+    public TextBtn getResetMusicBtn() { return resetMusicBtn; }
+    public TextBtn getResetSfxBtn() { return resetSfxBtn; }
+    public TextBtn getResetBrightnessBtn() { return resetBrightnessBtn; }
+    public TextBtn getResetAllBtn() { return resetAllBtn; }
 }

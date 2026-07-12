@@ -62,7 +62,32 @@ public class SettingsController {
             }
         });
 
-        view.getResetBtn().addClickListener(new ClickListener() {
+        view.getResetMusicBtn().addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                settings.resetMusic();
+                view.updateUIFromSettings();
+            }
+        });
+
+        view.getResetSfxBtn().addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                settings.resetSfx();
+                view.updateUIFromSettings();
+            }
+        });
+
+        view.getResetBrightnessBtn().addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                settings.resetBrightness();
+                view.updateUIFromSettings();
+                applyBrightnessEffect(settings.getBrightness());
+            }
+        });
+
+        view.getResetAllBtn().addClickListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 settings.reset();

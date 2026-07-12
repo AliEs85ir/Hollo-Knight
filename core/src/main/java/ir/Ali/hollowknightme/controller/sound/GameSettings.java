@@ -18,8 +18,8 @@ public class GameSettings {
     public void load() {
         Preferences prefs = Gdx.app.getPreferences(PREF_NAME);
         masterVolume = prefs.getFloat("masterVolume", 1.0f);
-        musicVolume = prefs.getFloat("musicVolume", 1.0f);
-        sfxVolume = prefs.getFloat("sfxVolume", 1.0f);
+        musicVolume = prefs.getFloat("musicVolume", 0.7f);
+        sfxVolume = prefs.getFloat("sfxVolume", 0.8f);
         brightness = prefs.getFloat("brightness", 1.0f);
 
         masterMute = prefs.getBoolean("masterMute", false);
@@ -43,12 +43,24 @@ public class GameSettings {
 
     public void reset() {
         masterVolume = 1.0f;
-        musicVolume = 1.0f;
-        sfxVolume = 1.0f;
+        musicVolume = 0.7f;
+        sfxVolume = 0.8f;
         brightness = 1.0f;
         masterMute = false;
         musicMute = false;
         sfxMute = false;
+    }
+
+    public void resetMusic() {
+        musicVolume = 0.7f;
+    }
+
+    public void resetSfx() {
+        sfxVolume = 0.8f;
+    }
+
+    public void resetBrightness() {
+        brightness = 1.0f;
     }
 
     public float getMasterVolume() { return masterMute ? 0f : masterVolume; }

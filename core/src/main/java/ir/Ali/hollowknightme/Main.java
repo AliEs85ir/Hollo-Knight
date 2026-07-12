@@ -14,13 +14,11 @@ public class Main extends Game {
         UIManager.load();
         ScreenManager.getInstance().initialize(this);
         ScreenManager.getInstance().setScreen(new MainMenuScreen());
-        AudioManager.getInstance().playMusic(MusicType.ENTER);
     }
 
     @Override
     public void render() {
         super.render();
-        AudioManager.getInstance().update(Gdx.graphics.getDeltaTime());
     }
 
     @Override

@@ -1,14 +1,15 @@
 {
 slotNumber: 1
 currentRoomPath: bossRoom.tmx
-knightHealth: 8
+knightHealth: 5
 knightSoul: 99
-playTimeSeconds: 95
-totalDeaths: 1
-totalEnemiesKilled: 3
+playTimeSeconds: 124
+totalEnemiesKilled: 2
 enemyKilledByType: {
+	FALSE_KNIGHT: 1
 	HUSK_HORNHEAD: 1
-	CRAWLID: 2
 }
+achCompletion: true
+achFalseKnight: true
 achProPlayer: true
 }

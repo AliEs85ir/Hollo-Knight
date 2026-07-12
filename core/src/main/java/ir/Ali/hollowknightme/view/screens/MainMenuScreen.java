@@ -1,5 +1,6 @@
 package ir.Ali.hollowknightme.view.screens;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -10,7 +11,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 import ir.Ali.hollowknightme.controller.screens.MainMenuController;
+import ir.Ali.hollowknightme.controller.sound.AudioManager;
 import ir.Ali.hollowknightme.controller.ui.UIManager;
+import ir.Ali.hollowknightme.enums.sound.MusicType;
 import ir.Ali.hollowknightme.model.ui.TextBtn;
 import ir.Ali.hollowknightme.view.animation.AnimatedImage;
 
@@ -28,6 +31,7 @@ public class MainMenuScreen extends BaseScreen {
 
     public MainMenuScreen() {
         super();
+        AudioManager.getInstance().playMusic(MusicType.ENTER);
         TextureRegion bgRegion = UIManager.getAtlas().findRegion("main_menu_bg");
         if(bgRegion != null) {
             backgroundImage = new Image(new TextureRegionDrawable(bgRegion));
@@ -89,6 +93,14 @@ public class MainMenuScreen extends BaseScreen {
         contentTable.addAction(Actions.fadeIn(1.3f));
 
         controller = new MainMenuController(this);
+    }
+
+    @Override
+    public void render(float delta) {
+        stage.act(delta);
+        stage.draw();
+        AudioManager.getInstance().update(Gdx.graphics.getDeltaTime());
+
     }
     public TextBtn getStartGameBtn() { return startGameBtn; }
     public TextBtn getOptionsBtn() { return optionsBtn; }
