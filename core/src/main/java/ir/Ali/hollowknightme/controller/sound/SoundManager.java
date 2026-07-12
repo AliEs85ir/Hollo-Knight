@@ -6,13 +6,12 @@ import ir.Ali.hollowknightme.enums.sound.SfxType;
 import java.util.EnumMap;
 import java.util.Map;
 
-
 public class SoundManager {
     private final Map<SfxType, Sound> sounds;
     private final Map<SfxType, Long> activeLoops;
-    private final AudioSettings settings;
+    private final GameSettings settings;
 
-    public SoundManager(AudioSettings settings) {
+    public SoundManager(GameSettings settings) {
         this.settings = settings;
         this.sounds = new EnumMap<>(SfxType.class);
         this.activeLoops = new EnumMap<>(SfxType.class);

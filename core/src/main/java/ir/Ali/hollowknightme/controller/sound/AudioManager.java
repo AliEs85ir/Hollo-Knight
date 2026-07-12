@@ -6,12 +6,12 @@ import ir.Ali.hollowknightme.enums.sound.SfxType;
 public class AudioManager {
     private static AudioManager instance;
 
-    private final AudioSettings settings;
+    private final GameSettings settings;
     private final SoundManager soundManager;
     private final MusicManager musicManager;
 
     private AudioManager() {
-        this.settings = new AudioSettings();
+        this.settings = new GameSettings();
         this.settings.load();
 
         this.soundManager = new SoundManager(this.settings);
@@ -24,6 +24,7 @@ public class AudioManager {
         }
         return instance;
     }
+
     public void playSfx(SfxType type) { soundManager.play(type); }
     public void loopSfx(SfxType type) { soundManager.loop(type); }
     public void stopLoop(SfxType type) { soundManager.stopLoop(type); }
@@ -33,7 +34,7 @@ public class AudioManager {
     public void pause() { musicManager.pause(); }
     public void resume() { musicManager.resume(); }
     public void update(float delta) { musicManager.update(delta); }
-    public AudioSettings getSettings() { return settings; }
+    public GameSettings getSettings() { return settings; }
 
     public void dispose() {
         settings.save();

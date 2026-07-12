@@ -42,31 +42,42 @@ public class CheckBoxDi extends Table {
         this.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                checked = !checked;
-                notificationLabel.clearActions();
-                if (checked) {
-                    checkboxImage.setDrawable(skin, "box_on");
-                    notificationLabel.setVisible(true);
-                    notificationLabel.setColor(1, 1, 1, 0);
-                    notificationLabel.setX(checkboxImage.getX() + checkboxImage.getWidth());
-                    notificationLabel.addAction(Actions.sequence(
-                        Actions.parallel(
-                            Actions.fadeIn(0.25f),
-                            Actions.moveBy(20f, 0f, 0.25f)
-                        ),
-                        Actions.delay(1.8f),
-                        Actions.parallel(
-                            Actions.fadeOut(0.25f),
-                            Actions.moveBy(-20f, 0f, 0.25f)
-                        ),
-                        Actions.run(() -> notificationLabel.setVisible(false))
-                    ));
-                } else {
-                    checkboxImage.setDrawable(skin, "box_off");
-                    notificationLabel.setVisible(false);
-                }
+                setChecked(!checked);
             }
         });
+    }
+
+    public void setChecked(boolean value) {
+        if (this.checked == value) {
+            return;
+        }
+        this.checked = value;
+        updateVisuals();
+    }
+
+    private void updateVisuals() {
+        notificationLabel.clearActions();
+        if (checked) {
+            checkboxImage.setDrawable(skin, "box_on");
+            notificationLabel.setVisible(true);
+            notificationLabel.setColor(1, 1, 1, 0);
+            notificationLabel.setX(checkboxImage.getX() + checkboxImage.getWidth());
+            notificationLabel.addAction(Actions.sequence(
+                Actions.parallel(
+                    Actions.fadeIn(0.25f),
+                    Actions.moveBy(20f, 0f, 0.25f)
+                ),
+                Actions.delay(1.8f),
+                Actions.parallel(
+                    Actions.fadeOut(0.25f),
+                    Actions.moveBy(-20f, 0f, 0.25f)
+                ),
+                Actions.run(() -> notificationLabel.setVisible(false))
+            ));
+        } else {
+            checkboxImage.setDrawable(skin, "box_off");
+            notificationLabel.setVisible(false);
+        }
     }
 
     public boolean isChecked() {

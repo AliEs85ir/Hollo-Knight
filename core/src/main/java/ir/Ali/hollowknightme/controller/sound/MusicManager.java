@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class MusicManager {
     private final Map<MusicType, Music> musics;
-    private final AudioSettings settings;
+    private final GameSettings settings;
 
     private MusicType currentType;
     private MusicType nextType;
@@ -18,7 +18,7 @@ public class MusicManager {
     private final float fadeDuration = 3.0f;
     private boolean isCrossFading;
 
-    public MusicManager(AudioSettings settings) {
+    public MusicManager(GameSettings settings) {
         this.settings = settings;
         this.musics = new EnumMap<>(MusicType.class);
         loadMusics();
