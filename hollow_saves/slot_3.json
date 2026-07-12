@@ -1,0 +1,15 @@
+{
+slotNumber: 3
+currentRoomPath: bossRoom.tmx
+knightHealth: 5
+knightSoul: 99
+playTimeSeconds: 110
+totalDeaths: 2
+totalEnemiesKilled: 4
+enemyKilledByType: {
+	WINGED_SENTRY: 1
+	HUSK_HORNHEAD: 2
+	CRAWLID: 1
+}
+achProPlayer: true
+}

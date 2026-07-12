@@ -1,0 +1,2963 @@
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\Main.java ---
+package ir.Ali.hollowknightme;
+import com.badlogic.gdx.Game;
+import ir.Ali.hollowknightme.controller.screens.ScreenManager;
+import ir.Ali.hollowknightme.manager.ui.UIManager;
+import ir.Ali.hollowknightme.view.screens.GameScreen;
+import ir.Ali.hollowknightme.view.screens.MainMenuView;
+public class Main extends Game {
+    @Override
+    public void create() {
+        UIManager.load();
+        ScreenManager.getInstance().initialize(this);
+        ScreenManager.getInstance().setScreen(new GameScreen("room1.tmx"));
+    }
+    @Override
+    public void dispose() {
+        super.dispose();
+        UIManager.dispose();
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\controller\KnightContactListener.java ---
+package ir.Ali.hollowknightme.controller;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.*;
+import ir.Ali.hollowknightme.model.knight.Knight;
+import ir.Ali.hollowknightme.model.map.GroundData;
+import ir.Ali.hollowknightme.model.map.GroundType;
+public class KnightContactListener implements ContactListener {
+    private final Knight knight;
+    private int groundContacts = 0;
+    private int wallContacts = 0;
+    private int ceilingContacts = 0;
+    public KnightContactListener(Knight knight) {
+        this.knight = knight;
+    }
+    @Override
+    public void beginContact(Contact contact) {
+        Body bodyA = contact.getFixtureA().getBody();
+        Body bodyB = contact.getFixtureB().getBody();
+        if (bodyA != knight.getBody() && bodyB != knight.getBody()) return;
+        GroundData groundData = getGroundDataFromContact(contact);
+        if (groundData != null) {
+            System.out.println("DEBUG: Ground Contact Started! Type: " + groundData.getType());
+            handleGroundContact(contact, groundData);
+            return;
+        }
+        handleLegacyContact(contact);
+    }
+    @Override
+    public void endContact(Contact contact) {
+        Body bodyA = contact.getFixtureA().getBody();
+        Body bodyB = contact.getFixtureB().getBody();
+        if (bodyA != knight.getBody() && bodyB != knight.getBody()) return;
+        GroundData groundData = getGroundDataFromContact(contact);
+        if (groundData != null) {
+            handleGroundEndContact(contact, groundData);
+            return;
+        }
+        handleLegacyEndContact(contact);
+    }
+    private GroundData getGroundDataFromContact(Contact contact) {
+        Object userDataA = contact.getFixtureA().getUserData();
+        Object userDataB = contact.getFixtureB().getUserData();
+        if (userDataA instanceof GroundData) return (GroundData) userDataA;
+        if (userDataB instanceof GroundData) return (GroundData) userDataB;
+        return null;
+    }
+    private void handleGroundContact(Contact contact, GroundData groundData) {
+        WorldManifold worldManifold = contact.getWorldManifold();
+        Vector2 normal = worldManifold.getNormal();
+        if (normal.y > 0.5f && groundData.isTopActive()) {
+            groundContacts++;
+            knight.setGrounded(true);
+            knight.setCanDoubleJump(true);
+            return;
+        }
+        if (normal.y < -0.5f && groundData.isBottomActive()) {
+            ceilingContacts++;
+            knight.setOnCeiling(true);
+        } else if (Math.abs(normal.x) > 0.5f) {
+            if ((normal.x > 0 && groundData.isLeftActive()) ||
+                (normal.x < 0 && groundData.isRightActive())) {
+                wallContacts++;
+                knight.setOnWall(true);
+            }
+        }
+    }
+    private void handleGroundEndContact(Contact contact, GroundData groundData) {
+        groundContacts--;
+        if (groundContacts <= 0) {
+            groundContacts = 0;
+            knight.setGrounded(false);
+        }
+    }
+    private void handleLegacyContact(Contact contact) {
+        Object userDataA = contact.getFixtureA().getUserData();
+        Object userDataB = contact.getFixtureB().getUserData();
+        String type = (userDataA instanceof String) ? (String) userDataA :
+            (userDataB instanceof String) ? (String) userDataB : null;
+        System.out.println("DEBUG: Legacy Contact with type: " + type);
+        if (userDataA instanceof String) type = (String) userDataA;
+        else if (userDataB instanceof String) type = (String) userDataB;
+        if ("floor".equals(type)) {
+            groundContacts++;
+            knight.setGrounded(true);
+            knight.setCanDoubleJump(true);
+        } else if ("wall".equals(type)) {
+            wallContacts++;
+            knight.setOnWall(true);
+        } else if ("ceiling".equals(type)) {
+            ceilingContacts++;
+            knight.setOnCeiling(true);
+        } else {
+            WorldManifold worldManifold = contact.getWorldManifold();
+            Vector2 normal = worldManifold.getNormal();
+            if (normal.y > 0.5f) {
+                groundContacts++;
+                knight.setGrounded(true);
+                knight.setCanDoubleJump(true);
+            } else if (Math.abs(normal.x) > 0.5f) {
+                wallContacts++;
+                knight.setOnWall(true);
+            } else if (normal.y < -0.5f) {
+                ceilingContacts++;
+                knight.setOnCeiling(true);
+            }
+        }
+    }
+    private void handleLegacyEndContact(Contact contact) {
+        Object userDataA = contact.getFixtureA().getUserData();
+        Object userDataB = contact.getFixtureB().getUserData();
+        String type = null;
+        if (userDataA instanceof String) type = (String) userDataA;
+        else if (userDataB instanceof String) type = (String) userDataB;
+        if ("floor".equals(type)) {
+            groundContacts--;
+            if (groundContacts <= 0) {
+                groundContacts = 0;
+                knight.setGrounded(false);
+            }
+        } else if ("wall".equals(type)) {
+            wallContacts--;
+            if (wallContacts <= 0) {
+                wallContacts = 0;
+                knight.setOnWall(false);
+            }
+        } else if ("ceiling".equals(type)) {
+            ceilingContacts--;
+            if (ceilingContacts <= 0) {
+                ceilingContacts = 0;
+                knight.setOnCeiling(false);
+            }
+        }
+    }
+    @Override
+    public void preSolve(Contact contact, Manifold oldManifold) {}
+    @Override
+    public void postSolve(Contact contact, ContactImpulse impulse) {}
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\controller\KnightController.java ---
+package ir.Ali.hollowknightme.controller;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.math.Vector2;
+import ir.Ali.hollowknightme.enums.knight.KnightState;
+import ir.Ali.hollowknightme.enums.knight.MovementStatus;
+import ir.Ali.hollowknightme.manager.game.ControlManager;
+import ir.Ali.hollowknightme.manager.game.GameStateManager;
+import ir.Ali.hollowknightme.model.knight.Knight;
+import ir.Ali.hollowknightme.view.knight.KnightAnimator;
+public class KnightController {
+    private final Knight knight;
+    private final Body body;
+    private static final float MAX_VELOCITY = 1.5f;
+    private static final float JUMP_IMPULSE = 6f;
+    private static final float JUMP_FORCE = 0.9f;
+    private static final float MAX_JUMP_VELOCITY = 10f;
+    private static final float JUMP_CUTOFF_FACTOR = 0.7f;
+    private static final float DASH_IMPULSE = 8f;
+    private static final float GRAVITY_SCALE = 1f;
+    private float dashTimer = 0f;
+    private float attackTimer = 0f;
+    private float focusTimer = 0f;
+    private float landingTimer = 0f;
+    private boolean isJumping = false;
+    private float jumpHoldTime = 0f;
+    private boolean previousGrounded = false;
+    public KnightController(Knight knight) {
+        this.knight = knight;
+        this.body = knight.getBody();
+        this.previousGrounded = knight.isGrounded();
+    }
+    public void update(float deltaTime) {
+        updateTimers(deltaTime);
+        handleInput(deltaTime);
+        handlePhysics();
+        updateState();
+        checkLanding();
+    }
+    private void updateTimers(float deltaTime) {
+        if (dashTimer > 0) dashTimer -= deltaTime;
+        if (attackTimer > 0) attackTimer -= deltaTime;
+        if (focusTimer > 0) focusTimer -= deltaTime;
+        if (landingTimer > 0) landingTimer -= deltaTime;
+    }
+    private void handleInput(float deltaTime) {
+        ControlManager cm = ControlManager.getInstance();
+        if (dashTimer > 0 || attackTimer > 0 || focusTimer > 0 ||
+            knight.getCurrentState() == KnightState.TRANSITION) {
+            return;
+        }
+        if (knight.isLocked()) {
+            return;
+        }
+        Vector2 velocity = body.getLinearVelocity();
+        float targetSpeedX = 0f;
+        if (cm.isActionPressed(MovementStatus.MOVE_RIGHT)) {
+            targetSpeedX = MAX_VELOCITY;
+            knight.setFacingRight(true);
+        } else if (cm.isActionPressed(MovementStatus.MOVE_LEFT)) {
+            targetSpeedX = -MAX_VELOCITY;
+            knight.setFacingRight(false);
+        }
+        body.setLinearVelocity(targetSpeedX, velocity.y);
+        boolean jumpPressed = cm.isActionPressed(MovementStatus.JUMP);
+        boolean jumpJustPressed = cm.isActionJustPressed(MovementStatus.JUMP);
+        if (jumpJustPressed) {
+            if (knight.isGrounded()) {
+                doJump(JUMP_IMPULSE);
+                knight.setGrounded(false);
+                knight.setCanDoubleJump(true);
+                isJumping = true;
+                jumpHoldTime = 0f;
+            } else if (knight.isOnWall() && !knight.isGrounded()) {
+                float wallJumpImpulse = JUMP_IMPULSE * 1.2f;
+                float dir = knight.isFacingRight() ? -1 : 1;
+                body.setLinearVelocity(dir * MAX_VELOCITY * 0.8f, wallJumpImpulse);
+                knight.setOnWall(false);
+                knight.setCanDoubleJump(true);
+                isJumping = true;
+                jumpHoldTime = 0f;
+            } else if (knight.isCanDoubleJump()) {
+                float doubleJumpImpulse = JUMP_IMPULSE * 0.9f;
+                body.setLinearVelocity(velocity.x, 0);
+                doJump(doubleJumpImpulse);
+                knight.setCanDoubleJump(false);
+                isJumping = true;
+                jumpHoldTime = 0f;
+            }
+        }
+        if (jumpPressed && isJumping && velocity.y < MAX_JUMP_VELOCITY) {
+            body.applyForceToCenter(0, JUMP_FORCE, true);
+            jumpHoldTime += deltaTime;
+        }
+        if (!jumpPressed && isJumping && velocity.y > 0) {
+            body.setLinearVelocity(velocity.x, velocity.y * JUMP_CUTOFF_FACTOR);
+            isJumping = false;
+        }
+        if (cm.isActionJustPressed(MovementStatus.NAIL_ATTACK)) {
+            attackTimer = KnightAnimator.getAnimationDuration(KnightState.SLASH);
+        }
+        if (cm.isActionJustPressed(MovementStatus.DASH) && dashTimer <= 0) {
+            dashTimer = KnightAnimator.getAnimationDuration(KnightState.DASH);
+            float direction = knight.isFacingRight() ? 1 : -1;
+            body.setLinearVelocity(direction * DASH_IMPULSE, 0);
+            body.setGravityScale(0);
+            knight.setDashing(true);
+        }
+        if (cm.isActionPressed(MovementStatus.FOCUS)) {
+            focusTimer = 1.5f;
+        }
+    }
+    private void doJump(float impulse) {
+        body.applyLinearImpulse(new Vector2(0, impulse), body.getWorldCenter(), true);
+    }
+    private void handlePhysics() {
+        if (dashTimer > 0) {
+            body.setGravityScale(0);
+        } else {
+            body.setGravityScale(GRAVITY_SCALE);
+            if (knight.isDashing()) {
+                knight.setDashing(false);
+            }
+        }
+        Vector2 vel = body.getLinearVelocity();
+        if (Math.abs(vel.x) > MAX_VELOCITY && dashTimer <= 0) {
+            vel.x = Math.signum(vel.x) * MAX_VELOCITY;
+            body.setLinearVelocity(vel);
+        }
+        if (knight.isOnWall() && Math.abs(vel.x) < 0.1f) {
+            knight.setOnWall(false);
+        }
+        if (knight.isOnCeiling() && vel.y > 0) {
+            body.setLinearVelocity(vel.x, 0);
+            knight.setOnCeiling(false);
+        }
+    }
+    private void checkLanding() {
+        boolean currentGrounded = knight.isGrounded();
+        if (!previousGrounded && currentGrounded) {
+            landingTimer = 0.15f;
+        }
+        previousGrounded = currentGrounded;
+    }
+    private void updateState() {
+        if (knight.getCurrentState() == KnightState.TRANSITION) {
+            return;
+        }
+        Vector2 vel = body.getLinearVelocity();
+        if (focusTimer > 0) {
+            knight.setCurrentState(KnightState.FOCUS);
+            return;
+        }
+        if (dashTimer > 0) {
+            knight.setCurrentState(KnightState.DASH);
+            return;
+        }
+        if (attackTimer > 0) {
+            if (!knight.isGrounded() && vel.y < -0.1f) {
+                knight.setCurrentState(KnightState.DOWN_SLASH);
+            } else {
+                knight.setCurrentState(KnightState.SLASH);
+            }
+            return;
+        }
+        if (landingTimer > 0) {
+            knight.setCurrentState(KnightState.LANDING);
+            return;
+        }
+        if (knight.isOnWall() && !knight.isGrounded() && Math.abs(vel.y) > 0.1f) {
+            knight.setCurrentState(KnightState.WALL_SLIDE);
+            return;
+        }
+        if (!knight.isGrounded() && !knight.isCanDoubleJump() && vel.y > 0.5f) {
+            knight.setCurrentState(KnightState.DOUBLE_JUMP);
+            return;
+        }
+        if (!knight.isGrounded() && Math.abs(vel.y) > 0.1f) {
+            knight.setCurrentState(KnightState.AIRBORNE);
+            return;
+        }
+        if (Math.abs(vel.x) > 0.1f) {
+            knight.setCurrentState(KnightState.RUN);
+        } else {
+            knight.setCurrentState(KnightState.IDLE);
+        }
+    }
+    public void setLandingTimer(float duration) {
+        this.landingTimer = duration;
+    }
+    public void resetJumpState() {
+        isJumping = false;
+        jumpHoldTime = 0f;
+    }
+    public void respawn() {
+        float[] safePos = GameStateManager.getInstance().getSafePosition();
+        if (safePos != null) {
+            knight.respawn(safePos[0], safePos[1]);
+            isJumping = false;
+            jumpHoldTime = 0f;
+            previousGrounded = false;
+            dashTimer = 0f;
+            attackTimer = 0f;
+            focusTimer = 0f;
+            landingTimer = 0f;
+        }
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\controller\menu\GuideController.java ---
+package ir.Ali.hollowknightme.controller.screens;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import ir.Ali.hollowknightme.controller.screens.ScreenManager;
+import ir.Ali.hollowknightme.view.screens.GuideView;
+import ir.Ali.hollowknightme.view.screens.MainMenuView;
+public class GuideController {
+    private final GuideView view;
+    public GuideController(GuideView view) {
+        this.view = view;
+        bindEvents();
+    }
+    private void bindEvents() {
+        view.getMainPanel().getBackButton().addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                ScreenManager.getInstance().setScreen(new MainMenuView());
+            }
+        });
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\controller\menu\MainMenuController.java ---
+package ir.Ali.hollowknightme.controller.screens;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import ir.Ali.hollowknightme.controller.screens.ScreenManager;
+import ir.Ali.hollowknightme.view.screens.MainMenuView;
+import ir.Ali.hollowknightme.view.screens.SettingsView;
+import ir.Ali.hollowknightme.view.screens.StartGameView;
+public class MainMenuController {
+    private final MainMenuView view;
+    public MainMenuController(MainMenuView view) {
+        this.view = view;
+        bindEvents();
+    }
+    private void bindEvents() {
+        view.getStartGameBtn().addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                ScreenManager.getInstance().setScreen(new StartGameView());
+            }
+        });
+        view.getOptionsBtn().addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                ScreenManager.getInstance().setScreen(new SettingsView());
+            }
+        });
+        view.getAchievementsBtn().addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+            }
+        });
+        view.getExtrasBtn().addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+            }
+        });
+        view.getQuitGameBtn().addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                Gdx.app.exit();
+            }
+        });
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\controller\menu\SettingsController.java ---
+package ir.Ali.hollowknightme.controller.screens;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import ir.Ali.hollowknightme.controller.screens.ScreenManager;
+import ir.Ali.hollowknightme.view.screens.MainMenuView;
+import ir.Ali.hollowknightme.view.screens.SettingsView;
+public class SettingsController {
+    private final SettingsView view;
+    public SettingsController(SettingsView view) {
+        this.view = view;
+        bindEvents();
+    }
+    private void bindEvents() {
+        view.getMainPanel().getBackButton().addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                ScreenManager.getInstance().setScreen(new MainMenuView());
+            }
+        });
+        view.getMusicVolumeSlider().addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+            }
+        });
+        view.getBrightnessSlider().addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+            }
+        });
+        view.getMusicMuteCheck().addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+            }
+        });
+        view.getSfxMuteCheck().addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+            }
+        });
+        view.getResetSoundsBtn().addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+            }
+        });
+        view.getKeyBindsBtn().addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+            }
+        });
+        view.getResetBindsBtn().addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+            }
+        });
+        view.getLanguageBtn().addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+            }
+        });
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\controller\menu\StartGameController.java ---
+package ir.Ali.hollowknightme.controller.screens;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import ir.Ali.hollowknightme.controller.screens.ScreenManager;
+import ir.Ali.hollowknightme.view.popup.AreYouSurePanel;
+import ir.Ali.hollowknightme.model.save.SaveSlotComponent;
+import ir.Ali.hollowknightme.view.screens.MainMenuView;
+import ir.Ali.hollowknightme.view.screens.StartGameView;
+public class StartGameController {
+    private final StartGameView view;
+    public StartGameController(StartGameView view) {
+        this.view = view;
+        initListeners();
+    }
+    private void initListeners() {
+        view.getMainPanel().getBackButton().addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+            }
+        });
+        for (SaveSlotComponent slotComponent : view.getSlots()) {
+            slotComponent.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    if (event.getTarget().getName() == null || !event.getTarget().getName().equals("CLEAR SAVE")) {
+                        if (slotComponent.getModel().isEmpty()) {
+                        } else {
+                        }
+                    }
+                }
+            });
+            slotComponent.getClearBtn().addClickListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    AreYouSurePanel popUp = new AreYouSurePanel(new Runnable() {
+                        @Override
+                        public void run() {
+                            slotComponent.getModel().clear();
+                            slotComponent.updateModel(slotComponent.getModel());
+                        }
+                    });
+                    popUp.show(view.getStage());
+                }
+            });
+        }
+        view.getMainPanel().getBackButton().addClickListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                ScreenManager.getInstance().setScreen(new MainMenuView());
+            }
+        });
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\enums\KnightState.java ---
+package ir.Ali.hollowknightme.enums;
+public enum KnightState {
+    AIRBORNE, DASH, DEATH, DOUBLE_JUMP, DOWN_SLASH,
+    FIREBALL_CAST, FOCUS_END, FOCUS_GET, FOCUS_START, FOCUS,
+    IDLE_HURT, IDLE, LANDING, LOOK_DOWN, LOOK_UP,
+    RUN, SCREAM, SLASH, SLASH_ALT, UP_SLASH,
+    WALL_SLIDE, WALL_JUMP , TRANSITION
+    ;
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\enums\MovementStatus.java ---
+package ir.Ali.hollowknightme.enums;
+public enum MovementStatus {
+    MOVE_LEFT ,
+    MOVE_RIGHT ,
+    JUMP ,
+    LOOK_UP ,
+    LOOK_DOWN ,
+    DASH ,
+    NAIL_ATTACK ,
+    FOCUS
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\manager\CompositeContactListener.java ---
+package ir.Ali.hollowknightme.manager;
+import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.ContactImpulse;
+import com.badlogic.gdx.physics.box2d.ContactListener;
+import com.badlogic.gdx.physics.box2d.Manifold;
+import java.util.ArrayList;
+import java.util.List;
+public class CompositeContactListener implements ContactListener {
+    private final List<ContactListener> listeners = new ArrayList<>();
+    public void addListener(ContactListener listener) {
+        if (listener != null) {
+            listeners.add(listener);
+        }
+    }
+    @Override
+    public void beginContact(Contact contact) {
+        for (ContactListener l : listeners) {
+            l.beginContact(contact);
+        }
+    }
+    @Override
+    public void endContact(Contact contact) {
+        for (ContactListener l : listeners) {
+            l.endContact(contact);
+        }
+    }
+    @Override
+    public void preSolve(Contact contact, Manifold oldManifold) {
+        for (ContactListener l : listeners) {
+            l.preSolve(contact, oldManifold);
+        }
+    }
+    @Override
+    public void postSolve(Contact contact, ContactImpulse impulse) {
+        for (ContactListener l : listeners) {
+            l.postSolve(contact, impulse);
+        }
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\manager\ControlManager.java ---
+package ir.Ali.hollowknightme.manager;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.utils.ObjectMap;
+import ir.Ali.hollowknightme.enums.knight.MovementStatus;
+public class ControlManager {
+    private static volatile ControlManager instance;
+    private final ObjectMap<MovementStatus, Integer> keybinds;
+    private ControlManager() {
+        this.keybinds = new ObjectMap<>();
+        loadDefaultKeybinds();
+    }
+    public static ControlManager getInstance() {
+        if (instance == null) {
+            synchronized (ControlManager.class) {
+                if (instance == null) {
+                    instance = new ControlManager();
+                }
+            }
+        }
+        return instance;
+    }
+    private void loadDefaultKeybinds() {
+        keybinds.put(MovementStatus.MOVE_LEFT, Keys.LEFT);
+        keybinds.put(MovementStatus.MOVE_RIGHT, Keys.RIGHT);
+        keybinds.put(MovementStatus.JUMP, Keys.UP);
+        keybinds.put(MovementStatus.LOOK_UP, Keys.W);
+        keybinds.put(MovementStatus.LOOK_DOWN, Keys.S);
+        keybinds.put(MovementStatus.DASH, Keys.SHIFT_LEFT);
+        keybinds.put(MovementStatus.NAIL_ATTACK, Keys.K);
+    }
+    public boolean isActionPressed(MovementStatus action) {
+        Integer keyCode = keybinds.get(action);
+        return keyCode != null && Gdx.input.isKeyPressed(keyCode);
+    }
+    public boolean isActionJustPressed(MovementStatus action) {
+        Integer keyCode = keybinds.get(action);
+        return keyCode != null && Gdx.input.isKeyJustPressed(keyCode);
+    }
+    public void updateKeybind(MovementStatus action, int newKeyCode) {
+        if (keybinds.containsKey(action)) {
+            keybinds.put(action, newKeyCode);
+        }
+    }
+    public String getKeyDisplayName(MovementStatus action) {
+        Integer keyCode = keybinds.get(action);
+        return (keyCode != null) ? Keys.toString(keyCode) : "NONE";
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\manager\GameStateManager.java ---
+package ir.Ali.hollowknightme.manager;
+import ir.Ali.hollowknightme.model.enviroment.Environment;
+import ir.Ali.hollowknightme.model.enviroment.Room;
+import ir.Ali.hollowknightme.model.enviroment.RoomState;
+public class GameStateManager {
+    private static GameStateManager instance;
+    private Environment currentEnvironment;
+    private GameStateManager() {}
+    public static GameStateManager getInstance() {
+        if (instance == null) {
+            instance = new GameStateManager();
+        }
+        return instance;
+    }
+    public void setCurrentEnvironment(Environment environment) {
+        this.currentEnvironment = environment;
+        markCurrentRoomAsVisited();
+    }
+    public Environment getCurrentEnvironment() {
+        return currentEnvironment;
+    }
+    public Room getCurrentRoom() {
+        if (currentEnvironment == null) return null;
+        return currentEnvironment.getCurrentRoom();
+    }
+    public Room getNextRoom() {
+        if (currentEnvironment == null) return null;
+        return currentEnvironment.getNextRoom();
+    }
+    public Room getPreviousRoom() {
+        if (currentEnvironment == null) return null;
+        return currentEnvironment.getPreviousRoom();
+    }
+    public Room getRoomAt(int index) {
+        if (currentEnvironment == null || index < 0 || index >= currentEnvironment.getRooms().size()) {
+            return null;
+        }
+        return currentEnvironment.getRooms().get(index);
+    }
+    public String getCurrentRoomPath() {
+        Room room = getCurrentRoom();
+        return room != null ? room.getMapPath() : null;
+    }
+    public void moveToNextRoom() {
+        if (currentEnvironment != null) {
+            markCurrentRoomAsVisited();
+            currentEnvironment.moveToNextRoom();
+            markCurrentRoomAsVisited();
+        }
+    }
+    public void moveToPreviousRoom() {
+        if (currentEnvironment != null) {
+            markCurrentRoomAsVisited();
+            currentEnvironment.moveToPreviousRoom();
+            markCurrentRoomAsVisited();
+        }
+    }
+    public void moveToRoom(int index) {
+        if (currentEnvironment != null) {
+            markCurrentRoomAsVisited();
+            currentEnvironment.moveToRoom(index);
+            markCurrentRoomAsVisited();
+        }
+    }
+    public RoomState getCurrentRoomState() {
+        Room room = getCurrentRoom();
+        return room != null ? room.getState() : null;
+    }
+    public RoomState getRoomState(String mapPath) {
+        if (currentEnvironment == null) return null;
+        for (Room room : currentEnvironment.getRooms()) {
+            if (room.getMapPath().equals(mapPath)) {
+                return room.getState();
+            }
+        }
+        return null;
+    }
+    private void markCurrentRoomAsVisited() {
+        RoomState state = getCurrentRoomState();
+        if (state != null) {
+            state.setVisited(true);
+        }
+    }
+    public void updateSafePosition(float x, float y) {
+        RoomState state = getCurrentRoomState();
+        if (state != null) {
+            state.setLastSafeX(x);
+            state.setLastSafeY(y);
+        }
+    }
+    public float[] getSafePosition() {
+        RoomState state = getCurrentRoomState();
+        if (state != null) {
+            return new float[]{state.getLastSafeX(), state.getLastSafeY()};
+        }
+        return null;
+    }
+    public void respawnKnight(com.badlogic.gdx.physics.box2d.Body knightBody) {
+        float[] safePos = getSafePosition();
+        if (safePos != null && knightBody != null) {
+            knightBody.setTransform(safePos[0], safePos[1], 0);
+            knightBody.setLinearVelocity(0, 0);
+        }
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\manager\MapManager.java ---
+package ir.Ali.hollowknightme.manager;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.maps.MapObjects;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.utils.Disposable;
+import ir.Ali.hollowknightme.model.map.MapData;
+public class MapManager implements Disposable {
+    private TiledMap currentMap;
+    private OrthogonalTiledMapRenderer mapRenderer;
+    private String currentMapPath;
+    private MapData mapData;
+    public static final float PPM = 100f;
+    public static final float UNIT_SCALE = 1f / PPM;
+    public MapManager() {
+    }
+    public void loadMap(String mapPath) {
+        if (mapPath.equals(currentMapPath) && currentMap != null) {
+            return;
+        }
+        dispose();
+        try {
+            this.currentMapPath = mapPath;
+            TmxMapLoader loader = new TmxMapLoader();
+            this.currentMap = loader.load(mapPath);
+            this.mapRenderer = new OrthogonalTiledMapRenderer(currentMap, UNIT_SCALE);
+            MapObjects collisionObjects = null;
+            MapObjects entityObjects = null;
+            if (currentMap.getLayers().get("collisions") != null) {
+                collisionObjects = currentMap.getLayers().get("collisions").getObjects();
+            } else {
+                System.err.println("WARNING: Layer 'collisions' not found in map: " + mapPath);
+            }
+            if (currentMap.getLayers().get("entities") != null) {
+                entityObjects = currentMap.getLayers().get("entities").getObjects();
+            } else {
+                System.err.println("WARNING: Layer 'entities' not found in map: " + mapPath);
+            }
+            this.mapData = TiledMapLoader.loadMapData(collisionObjects, entityObjects);
+        } catch (Exception e) {
+            System.err.println("CRITICAL ERROR: Failed to load map at path: " + mapPath);
+            e.printStackTrace();
+            this.mapData = null;
+        }
+    }
+    public void render(OrthographicCamera camera) {
+        if (mapRenderer != null) {
+            mapRenderer.setView(camera);
+            mapRenderer.render();
+        }
+    }
+    public MapData getMapData() {
+        return mapData;
+    }
+    public TiledMap getCurrentMap() {
+        return currentMap;
+    }
+    @Deprecated
+    public MapObjects getLogicObjects() {
+        if (currentMap == null) {
+            return null;
+        }
+        if (currentMap.getLayers().get("logic") != null) {
+            return currentMap.getLayers().get("logic").getObjects();
+        }
+        System.err.println("WARNING: Object Layer named 'logic' was not found in map: " + currentMapPath);
+        return null;
+    }
+    @Override
+    public void dispose() {
+        if (currentMap != null) {
+            currentMap.dispose();
+            currentMap = null;
+        }
+        if (mapRenderer != null) {
+            mapRenderer.dispose();
+            mapRenderer = null;
+        }
+        currentMapPath = null;
+        mapData = null;
+    }
+    public float getMapWidth() {
+        if (currentMap == null) return 0;
+        return currentMap.getProperties().get("width", Integer.class) *
+            currentMap.getProperties().get("tilewidth", Integer.class) / PPM;
+    }
+    public float getMapHeight() {
+        if (currentMap == null) return 0;
+        return currentMap.getProperties().get("height", Integer.class) *
+            currentMap.getProperties().get("tileheight", Integer.class) / PPM;
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\manager\PhysicsBuilder.java ---
+package ir.Ali.hollowknightme.manager;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.physics.box2d.*;
+import ir.Ali.hollowknightme.model.map.GroundData;
+import ir.Ali.hollowknightme.model.map.GroundType;
+import ir.Ali.hollowknightme.model.map.MapData;
+import java.util.ArrayList;
+import java.util.List;
+public class PhysicsBuilder {
+    private static final float PPM = 100f;
+    public static List<Body> buildPhysics(World world, MapData mapData) {
+        List<Body> bodies = new ArrayList<>();
+        if (mapData == null) return bodies;
+        for (GroundData ground : mapData.getGrounds()) {
+            Body body = createGroundBody(world, ground);
+            if (body != null) bodies.add(body);
+        }
+        for (ir.Ali.hollowknightme.model.map.TransitionData transition : mapData.getTransitions()) {
+            Body body = createTransitionBody(world, transition);
+            if (body != null) bodies.add(body);
+        }
+        return bodies;
+    }
+    private static Body createTransitionBody(World world, ir.Ali.hollowknightme.model.map.TransitionData transition) {
+        Rectangle rect = transition.getRectangle();
+        float centerX = (rect.x + rect.width / 2f) / PPM;
+        float centerY = (rect.y + rect.height / 2f) / PPM;
+        float halfWidth = (rect.width / 2f) / PPM;
+        float halfHeight = (rect.height / 2f) / PPM;
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.StaticBody;
+        bodyDef.position.set(centerX, centerY);
+        Body body = world.createBody(bodyDef);
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(halfWidth, halfHeight);
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        fixtureDef.isSensor = true;
+        Fixture fixture = body.createFixture(fixtureDef);
+        fixture.setUserData(transition);
+        shape.dispose();
+        body.setUserData("transition");
+        return body;
+    }
+    private static Body createGroundBody(World world, GroundData ground) {
+        Rectangle rect = ground.getRectangle();
+        GroundType type = ground.getType();
+        float centerX = (rect.x + rect.width / 2f) / PPM;
+        float centerY = (rect.y + rect.height / 2f) / PPM;
+        float halfWidth = (rect.width / 2f) / PPM;
+        float halfHeight = (rect.height / 2f) / PPM;
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.StaticBody;
+        bodyDef.position.set(centerX, centerY);
+        Body body = world.createBody(bodyDef);
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(halfWidth, halfHeight);
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        fixtureDef.friction = 0.5f;
+        fixtureDef.restitution = 0f;
+        Fixture fixture = body.createFixture(fixtureDef);
+        fixture.setUserData(ground);
+        shape.dispose();
+        body.setUserData("ground");
+        return body;
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\manager\RangeManager.java ---
+package ir.Ali.hollowknightme.manager;
+import com.badlogic.gdx.math.Rectangle;
+import ir.Ali.hollowknightme.model.map.MapData;
+import ir.Ali.hollowknightme.model.map.RangeData;
+import ir.Ali.hollowknightme.model.map.RangeType;
+import java.util.HashMap;
+import java.util.Map;
+public class RangeManager {
+    private final Map<RangeType, Rectangle> ranges = new HashMap<>();
+    public void loadRanges(MapData mapData) {
+        if (mapData == null) return;
+        for (RangeData range : mapData.getRanges()) {
+            ranges.put(range.getType(), range.getRectangle());
+        }
+    }
+    public Rectangle getRange(RangeType type) {
+        return ranges.get(type);
+    }
+    public boolean isWithinRange(RangeType type, float x, float y) {
+        Rectangle rect = getRange(type);
+        return rect != null && rect.contains(x, y);
+    }
+    public boolean isWithinPatrolRange(float x, float y) {
+        return isWithinRange(RangeType.PATROL, x, y);
+    }
+    public boolean isWithinSightRange(float x, float y) {
+        return isWithinRange(RangeType.SIGHT, x, y);
+    }
+    public boolean isWithinAttackRange(float x, float y) {
+        return isWithinRange(RangeType.ATTACK, x, y);
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\manager\ScreenManager.java ---
+package ir.Ali.hollowknightme.manager;
+import com.badlogic.gdx.Game;
+import ir.Ali.hollowknightme.view.screens.BaseScreen;
+public class ScreenManager {
+    private static ScreenManager instance;
+    private Game game;
+    private ScreenManager() {}
+    public static ScreenManager getInstance() {
+        if (instance == null) {
+            instance = new ScreenManager();
+        }
+        return instance;
+    }
+    public void initialize(Game game) {
+        this.game = game;
+    }
+    public void setScreen(BaseScreen screen) {
+        if (game != null) {
+            game.setScreen(screen);
+        }
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\manager\SpawnManager.java ---
+package ir.Ali.hollowknightme.manager;
+import ir.Ali.hollowknightme.model.knight.Knight;
+import ir.Ali.hollowknightme.model.map.MapData;
+import ir.Ali.hollowknightme.model.map.SpawnData;
+import ir.Ali.hollowknightme.model.map.SpawnType;
+public class SpawnManager {
+    public static void spawnEntities(MapData mapData, Knight knight) {
+        if (mapData == null) return;
+        for (SpawnData spawn : mapData.getSpawns()) {
+            SpawnType type = spawn.getType();
+            if (type == SpawnType.PLAYER) {
+                continue;
+            } else if (type == SpawnType.ENEMY) {
+            } else if (type == SpawnType.NPC) {
+            }
+        }
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\manager\TiledMapLoader.java ---
+package ir.Ali.hollowknightme.manager;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.MapObjects;
+import com.badlogic.gdx.maps.objects.PointMapObject;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+import ir.Ali.hollowknightme.model.map.*;
+public class TiledMapLoader {
+    public static MapData loadMapData(MapObjects collisionObjects, MapObjects entityObjects) {
+        MapData mapData = new MapData();
+        if (collisionObjects != null) {
+            for (MapObject object : collisionObjects) {
+                if (!(object instanceof RectangleMapObject)) continue;
+                Rectangle rect = ((RectangleMapObject) object).getRectangle();
+                String className = getClassName(object).trim();
+                if (isGroundClass(className)) {
+                    GroundData ground = parseGround(object, rect, className);
+                    if (ground != null) mapData.addGround(ground);
+                }
+            }
+        }
+        if (entityObjects != null) {
+            for (MapObject object : entityObjects) {
+                String className = getClassName(object).trim();
+                if (className.equalsIgnoreCase("spawn")) {
+                    SpawnData spawn = parseSpawn(object);
+                    if (spawn != null) {
+                        mapData.addSpawn(spawn);
+                    }
+                } else if (className.equalsIgnoreCase("transition") ||
+                    className.equalsIgnoreCase("input") ||
+                    className.equalsIgnoreCase("output")) {
+                    TransitionData transition = parseTransition(object);
+                    if (transition != null) {
+                        mapData.addTransition(transition);
+                    } else {
+                        System.err.println("ERROR: Transition parsed as null for: " + object.getName());
+                    }
+                } else if (className.equalsIgnoreCase("range")) {
+                    RangeData range = parseRange(object);
+                    if (range != null) {
+                        mapData.addRange(range);
+                    }
+                } else {
+                    System.err.println("WARNING: Unknown entity object ignored: " + object.getName() + " (Class identified as: " + className + ")");
+                }
+            }
+        }
+        return mapData;
+    }
+    private static boolean isGroundClass(String className) {
+        if (className == null) return false;
+        String lower = className.toLowerCase();
+        return lower.equals("ground") ||
+            lower.equals("floor") ||
+            lower.equals("wall") ||
+            lower.equals("platform") ||
+            lower.equals("thorn");
+    }
+    private static String getClassName(MapObject object) {
+        Object value = object.getProperties().get("class");
+        if (value == null) value = object.getProperties().get("type");
+        if (value == null) value = object.getName();
+        return value == null ? "" : value.toString();
+    }
+    private static String getStringProperty(MapObject object, String key, String defaultValue) {
+        Object value = object.getProperties().get(key);
+        return value == null ? defaultValue : value.toString();
+    }
+    private static boolean getBooleanProperty(MapObject object, String key, boolean defaultValue) {
+        Object value = object.getProperties().get(key);
+        if (value == null) return defaultValue;
+        if (value instanceof Boolean) return (Boolean) value;
+        return Boolean.parseBoolean(value.toString());
+    }
+    private static float getFloatProperty(MapObject object, String key, float defaultValue) {
+        Object value = object.getProperties().get(key);
+        if (value == null) return defaultValue;
+        if (value instanceof Float) return (Float) value;
+        if (value instanceof Integer) return ((Integer) value).floatValue();
+        if (value instanceof Double) return ((Double) value).floatValue();
+        try {
+            return Float.parseFloat(value.toString());
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+    private static GroundData parseGround(MapObject object, Rectangle rect, String className) {
+        try {
+            String typeStr = getStringProperty(object, "type", null);
+            if (typeStr == null) {
+                typeStr = className;
+            }
+            GroundType type = GroundType.valueOf(typeStr.toUpperCase());
+            boolean left = getBooleanProperty(object, "isActiveLeft", false);
+            boolean right = getBooleanProperty(object, "isActiveRight", false);
+            boolean top = getBooleanProperty(object, "isActiveTop", false);
+            boolean bottom = getBooleanProperty(object, "isActiveBottom", false);
+            if ((type == GroundType.FLOOR || type == GroundType.PLATFORM) &&
+                !object.getProperties().containsKey("isActiveTop")) {
+                top = true;
+            }
+            return new GroundData(rect, type, left, right, top, bottom);
+        } catch (Exception e) {
+            System.err.println("Ground Parse Error: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+    private static SpawnData parseSpawn(MapObject object) {
+        try {
+            Vector2 position;
+            if (object instanceof RectangleMapObject) {
+                Rectangle rect = ((RectangleMapObject) object).getRectangle();
+                position = new Vector2(rect.x + rect.width / 2f, rect.y + rect.height / 2f);
+            } else if (object instanceof PointMapObject) {
+                PointMapObject point = (PointMapObject) object;
+                position = new Vector2(point.getPoint().x, point.getPoint().y);
+            } else {
+                float x = getFloatProperty(object, "x", 0);
+                float y = getFloatProperty(object, "y", 0);
+                position = new Vector2(x, y);
+            }
+            String spawnTypeStr = getStringProperty(object, "spawnType", "PLAYER");
+            SpawnType spawnType = SpawnType.valueOf(spawnTypeStr.toUpperCase());
+            boolean facingRight = getBooleanProperty(object, "facingRight", true);
+            return new SpawnData(position, spawnType, facingRight);
+        } catch (Exception e) {
+            System.err.println("Spawn Parse Error: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+    private static TransitionData parseTransition(MapObject object) {
+        try {
+            if (!(object instanceof RectangleMapObject)) return null;
+            Rectangle rect = ((RectangleMapObject) object).getRectangle();
+            String typeStr = getStringProperty(object, "type", "INPUT");
+            TransitionType type = TransitionType.valueOf(typeStr.toUpperCase());
+            return new TransitionData(rect, type);
+        } catch (Exception e) {
+            System.err.println("Transition Parse Error: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+    private static RangeData parseRange(MapObject object) {
+        try {
+            if (!(object instanceof RectangleMapObject)) return null;
+            Rectangle rect = ((RectangleMapObject) object).getRectangle();
+            String typeStr = getStringProperty(object, "rangeType", "PATROL");
+            RangeType type = RangeType.valueOf(typeStr.toUpperCase());
+            return new RangeData(rect, type);
+        } catch (Exception e) {
+            System.err.println("Range Parse Error: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\manager\TransitionManager.java ---
+package ir.Ali.hollowknightme.manager;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.*;
+import ir.Ali.hollowknightme.enums.knight.KnightState;
+import ir.Ali.hollowknightme.model.enviroment.Room;
+import ir.Ali.hollowknightme.model.enviroment.RoomState;
+import ir.Ali.hollowknightme.model.knight.Knight;
+import ir.Ali.hollowknightme.model.map.MapData;
+import ir.Ali.hollowknightme.model.map.SpawnData;
+import ir.Ali.hollowknightme.model.map.SpawnType;
+import ir.Ali.hollowknightme.model.map.TransitionData;
+import java.util.ArrayList;
+import java.util.List;
+public class TransitionManager implements ContactListener {
+    private final Knight knight;
+    private final MapManager mapManager;
+    private final World world;
+    private final PhysicsBuilder physicsBuilder;
+    private boolean isTransitioning = false;
+    private List<Body> worldBodies = new ArrayList<>();
+    private boolean pendingTransition = false;
+    private Room targetRoomForTransition = null;
+    public TransitionManager(Knight knight, MapManager mapManager, World world) {
+        this.knight = knight;
+        this.mapManager = mapManager;
+        this.world = world;
+        this.physicsBuilder = new PhysicsBuilder();
+    }
+    public void update() {
+        if (pendingTransition && targetRoomForTransition != null) {
+            performTransition(targetRoomForTransition);
+            pendingTransition = false;
+            targetRoomForTransition = null;
+        }
+    }
+    @Override
+    public void beginContact(Contact contact) {
+        if (isTransitioning || pendingTransition) return;
+        Fixture fixtureA = contact.getFixtureA();
+        Fixture fixtureB = contact.getFixtureB();
+        if (fixtureA.getBody() != knight.getBody() && fixtureB.getBody() != knight.getBody()) return;
+        TransitionData transition = getTransitionData(fixtureA, fixtureB);
+        if (transition == null) return;
+        if (transition.isInput()) {
+            targetRoomForTransition = GameStateManager.getInstance().getPreviousRoom();
+            if (targetRoomForTransition != null) {
+                pendingTransition = true;
+            } else {
+                System.err.println("TransitionManager: No previous room available!");
+            }
+        } else if (transition.isOutput()) {
+            targetRoomForTransition = GameStateManager.getInstance().getNextRoom();
+            if (targetRoomForTransition != null) {
+                pendingTransition = true;
+            } else {
+                System.err.println("TransitionManager: No next room available!");
+            }
+        }
+    }
+    @Override
+    public void endContact(Contact contact) {
+    }
+    @Override
+    public void preSolve(Contact contact, Manifold oldManifold) {}
+    @Override
+    public void postSolve(Contact contact, ContactImpulse impulse) {}
+    private void performTransition(Room targetRoom) {
+        isTransitioning = true;
+        knight.setCurrentState(KnightState.TRANSITION);
+        knight.setLocked(true);
+        String targetMap = targetRoom.getMapPath();
+        if (targetMap == null || targetMap.isEmpty()) {
+            System.err.println("TransitionManager: targetMap is null or empty!");
+            unlockKnight();
+            isTransitioning = false;
+            return;
+        }
+        saveCurrentRoomState();
+        mapManager.loadMap(targetMap);
+        restoreRoomState(targetRoom.getState());
+        rebuildWorld();
+        placeKnightInNewMap();
+        GameStateManager gsm = GameStateManager.getInstance();
+        for (int i = 0; i < gsm.getCurrentEnvironment().getRooms().size(); i++) {
+            if (gsm.getCurrentEnvironment().getRooms().get(i).getMapPath().equals(targetMap)) {
+                gsm.moveToRoom(i);
+                break;
+            }
+        }
+        unlockKnight();
+        knight.setCurrentState(KnightState.IDLE);
+        isTransitioning = false;
+    }
+    private void saveCurrentRoomState() {
+        RoomState state = GameStateManager.getInstance().getCurrentRoomState();
+        if (state == null) return;
+    }
+    private void restoreRoomState(RoomState state) {
+        if (state == null) return;
+    }
+    private void rebuildWorld() {
+        for (Body body : worldBodies) {
+            world.destroyBody(body);
+        }
+        worldBodies.clear();
+        MapData mapData = mapManager.getMapData();
+        if (mapData != null) {
+            List<Body> newBodies = physicsBuilder.buildPhysics(world, mapData);
+            worldBodies.addAll(newBodies);
+        }
+    }
+    private void placeKnightInNewMap() {
+        MapData mapData = mapManager.getMapData();
+        if (mapData == null) {
+            System.err.println("TransitionManager: MapData is null!");
+            return;
+        }
+        Vector2 spawnPosition = null;
+        for (SpawnData spawn : mapData.getSpawns()) {
+            if (spawn.getType() == SpawnType.PLAYER) {
+                spawnPosition = spawn.getPosition().cpy().scl(1f / MapManager.PPM);
+                break;
+            }
+        }
+        if (spawnPosition == null) {
+            System.err.println("TransitionManager: No player spawn found in new map! Placing at (0,0).");
+            spawnPosition = new Vector2(0, 0);
+        }
+        GameStateManager.getInstance().updateSafePosition(spawnPosition.x, spawnPosition.y);
+        Body knightBody = knight.getBody();
+        knightBody.setTransform(spawnPosition, 0);
+        knightBody.setLinearVelocity(0, 0);
+    }
+    private void unlockKnight() {
+        knight.setLocked(false);
+    }
+    private TransitionData getTransitionData(Fixture fixtureA, Fixture fixtureB) {
+        Object dataA = fixtureA.getUserData();
+        Object dataB = fixtureB.getUserData();
+        if (dataA instanceof TransitionData) return (TransitionData) dataA;
+        if (dataB instanceof TransitionData) return (TransitionData) dataB;
+        return null;
+    }
+    public void setWorldBodies(List<Body> bodies) {
+        this.worldBodies = bodies;
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\manager\UIManager.java ---
+package ir.Ali.hollowknightme.manager;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+public class UIManager {
+    private static Skin skin;
+    private static TextureAtlas atlas;
+    public static void load() {
+        atlas = new TextureAtlas(Gdx.files.internal("assets/skin.atlas"));
+        skin = new Skin(Gdx.files.internal("assets/skin.json"), atlas);
+    }
+    public static Skin getSkin() {
+        if (skin == null) {
+            load();
+        }
+        return skin;
+    }
+    public static TextureAtlas getAtlas() {
+        if (atlas == null) {
+            load();
+        }
+        return atlas;
+    }
+    public static void dispose() {
+        if (skin != null) {
+            skin.dispose();
+            skin = null;
+        }
+        if (atlas != null) {
+            atlas.dispose();
+            atlas = null;
+        }
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\AreYouSurePanel.java ---
+package ir.Ali.hollowknightme.model;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import ir.Ali.hollowknightme.manager.ui.UIManager;
+public class AreYouSurePanel extends Table {
+    private final Runnable onConfirm;
+    public AreYouSurePanel(Runnable onConfirm) {
+        this.onConfirm = onConfirm;
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(new Color(0f, 0f, 0f, 0.75f));
+        pixmap.fill();
+        Texture bgTexture = new Texture(pixmap);
+        pixmap.dispose();
+        this.setBackground(new TextureRegionDrawable(bgTexture));
+        this.setTouchable(Touchable.enabled);
+        this.addListener(new InputListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+        });
+        Label titleLabel = new Label("ARE YOU SURE?", UIManager.getSkin(), "Text");
+        TextBtn noBtn = new TextBtn("NO", -200f);
+        TextBtn yesBtn = new TextBtn("YES", -200f);
+        Table buttonsTable = new Table();
+        buttonsTable.add(noBtn).padRight(100f);
+        buttonsTable.add(yesBtn);
+        this.add(titleLabel).padBottom(50f).row();
+        this.add(buttonsTable);
+        noBtn.addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                hide();
+            }
+        });
+        yesBtn.addClickListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (AreYouSurePanel.this.onConfirm != null) {
+                    AreYouSurePanel.this.onConfirm.run();
+                }
+                hide();
+            }
+        });
+    }
+    public void show(Stage stage) {
+        stage.addActor(this);
+        this.setSize(stage.getWidth(), stage.getHeight());
+        this.setPosition(0, 0);
+        this.getColor().a = 0;
+        this.addAction(Actions.fadeIn(0.25f));
+    }
+    public void hide() {
+        this.addAction(Actions.sequence(
+            Actions.fadeOut(0.2f),
+            Actions.removeActor()
+        ));
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\CheckBoxDi.java ---
+package ir.Ali.hollowknightme.model;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import ir.Ali.hollowknightme.manager.ui.UIManager;
+public class CheckBoxDi extends Table {
+    private final Image checkboxImage;
+    private final Label mainLabel;
+    private final Label notificationLabel;
+    private final Skin skin = UIManager.getSkin();
+    private boolean checked = false;
+    public CheckBoxDi(String text, String onStatus) {
+        checkboxImage = new Image(skin, "box_off");
+        mainLabel = new Label(text, skin, "Text");
+        Label.LabelStyle smallStyle;
+        if (skin.has("default", Label.LabelStyle.class)) {
+            smallStyle = new Label.LabelStyle(skin.get("default", Label.LabelStyle.class));
+        } else {
+            smallStyle = new Label.LabelStyle();
+            smallStyle.font = skin.getFont("default");
+            smallStyle.fontColor = Color.WHITE;
+        }
+        notificationLabel = new Label(" (" + onStatus + ") ", smallStyle);
+        notificationLabel.setVisible(false);
+        this.left();
+        this.add(mainLabel).left();
+        this.add(checkboxImage).left().padLeft(15f);
+        this.add(notificationLabel).left();
+        this.pack();
+        this.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                checked = !checked;
+                notificationLabel.clearActions();
+                if (checked) {
+                    checkboxImage.setDrawable(skin, "box_on");
+                    notificationLabel.setVisible(true);
+                    notificationLabel.setColor(1, 1, 1, 0);
+                    notificationLabel.setX(checkboxImage.getX() + checkboxImage.getWidth());
+                    notificationLabel.addAction(Actions.sequence(
+                        Actions.parallel(
+                            Actions.fadeIn(0.25f),
+                            Actions.moveBy(20f, 0f, 0.25f)
+                        ),
+                        Actions.delay(1.8f),
+                        Actions.parallel(
+                            Actions.fadeOut(0.25f),
+                            Actions.moveBy(-20f, 0f, 0.25f)
+                        ),
+                        Actions.run(new Runnable() {
+                            @Override
+                            public void run() {
+                                notificationLabel.setVisible(false);
+                            }
+                        })
+                    ));
+                } else {
+                    checkboxImage.setDrawable(skin, "box_off");
+                    notificationLabel.setVisible(false);
+                }
+            }
+        });
+    }
+    public boolean isChecked() {
+        return checked;
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\Environment.java ---
+package ir.Ali.hollowknightme.model;
+import java.util.ArrayList;
+public class Environment {
+    private String name;
+    private ArrayList<Room> rooms;
+    private int currentRoomIndex;
+    public Environment(String name) {
+        this.name = name;
+        this.rooms = new ArrayList<>();
+        this.currentRoomIndex = 0;
+    }
+    public void addRoom(Room room) {
+        rooms.add(room);
+    }
+    public Room getCurrentRoom() {
+        if (currentRoomIndex >= 0 && currentRoomIndex < rooms.size()) {
+            return rooms.get(currentRoomIndex);
+        }
+        return null;
+    }
+    public Room getNextRoom() {
+        int nextIndex = currentRoomIndex + 1;
+        if (nextIndex < rooms.size()) {
+            return rooms.get(nextIndex);
+        }
+        return null;
+    }
+    public Room getPreviousRoom() {
+        int prevIndex = currentRoomIndex - 1;
+        if (prevIndex >= 0) {
+            return rooms.get(prevIndex);
+        }
+        return null;
+    }
+    public void moveToNextRoom() {
+        if (currentRoomIndex + 1 < rooms.size()) {
+            currentRoomIndex++;
+        }
+    }
+    public void moveToPreviousRoom() {
+        if (currentRoomIndex - 1 >= 0) {
+            currentRoomIndex--;
+        }
+    }
+    public void moveToRoom(int index) {
+        if (index >= 0 && index < rooms.size()) {
+            currentRoomIndex = index;
+        }
+    }
+    public int getCurrentRoomIndex() { return currentRoomIndex; }
+    public ArrayList<Room> getRooms() { return rooms; }
+    public String getName() { return name; }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\HollowMenuPanel.java ---
+package ir.Ali.hollowknightme.model;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Array;
+import ir.Ali.hollowknightme.manager.ui.UIManager;
+import java.awt.*;
+public class HollowMenuPanel extends Table {
+    private final Label titleLabel;
+    private final TextBtn backButton;
+    private final Image animatedLine;
+    private final Skin skin = UIManager.getSkin();
+    private final Cell<Table> bodyCell;
+    private float stateTime = 0f;
+    private Animation<TextureRegion> lineAnimation;
+    public HollowMenuPanel(String titleText) {
+        this.setFillParent(true);
+        titleLabel = new Label(titleText, skin, "Title");
+        animatedLine = new Image();
+        Array<TextureRegion> frames = new Array<>();
+        for (int i = 2; i <= 8; i++) {
+            frames.add(UIManager.getAtlas().findRegion("Warning_Fleur000" + i));
+        }
+        lineAnimation = new Animation<>(0.1f, frames, Animation.PlayMode.NORMAL);
+        backButton = new TextBtn("BACK" , -200f);
+        this.add(titleLabel).padBottom(-10f).row();
+        this.add(animatedLine).padBottom(40f).row();
+        bodyCell = this.add(new Table()).padBottom(30f);
+        this.row();
+        this.add(backButton).padBottom(20f);
+        titleLabel.getColor().a = 0f;
+        backButton.getColor().a = 0f;
+        titleLabel.addAction(Actions.fadeIn(0.7f, Interpolation.sineOut));
+        animatedLine.addAction(Actions.fadeIn(0.5f , Interpolation.bounce));
+        backButton.addAction(Actions.fadeIn(0.7f, Interpolation.sineOut));
+    }
+    public void setBody(Table bodyTable) {
+        bodyCell.setActor(bodyTable);
+        bodyTable.getColor().a = 0f;
+        bodyTable.addAction(Actions.fadeIn(0.7f, Interpolation.sineOut));
+    }
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        stateTime += delta;
+        if (!lineAnimation.isAnimationFinished(stateTime)) {
+            animatedLine.setDrawable(new TextureRegionDrawable(lineAnimation.getKeyFrame(stateTime)));
+        }
+    }
+    public TextBtn getBackButton() {
+        return backButton;
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\Room.java ---
+package ir.Ali.hollowknightme.model;
+import ir.Ali.hollowknightme.model.map.MapData;
+public class Room {
+    private final String mapPath;
+    private final MapData mapData;
+    private RoomState state;
+    public Room(String mapPath, MapData mapData) {
+        this.mapPath = mapPath;
+        this.mapData = mapData;
+        this.state = new RoomState();
+    }
+    public String getMapPath() {
+        return mapPath;
+    }
+    public MapData getMapData() {
+        return mapData;
+    }
+    public RoomState getState() {
+        return state;
+    }
+    public void setState(RoomState state) {
+        this.state = state;
+    }
+    public boolean isVisited() {
+        return state != null && state.isVisited();
+    }
+    public boolean hasBoss() {
+        return false;
+    }
+    public boolean isBossDefeated() {
+        return state != null && state.isBossDefeated();
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\RoomState.java ---
+package ir.Ali.hollowknightme.model;
+import com.badlogic.gdx.utils.Array;
+import ir.Ali.hollowknightme.model.enemy.*;
+public class RoomState {
+    private Array<Enemy> aliveEnemies;
+    private Array<Enemy> deadEnemies;
+    private Array<String> destroyedObjects;
+    private boolean isBossDefeated;
+    private boolean isVisited;
+    private float lastSafeX;
+    private float lastSafeY;
+    public RoomState() {
+        this.aliveEnemies = new Array<>();
+        this.deadEnemies = new Array<>();
+        this.destroyedObjects = new Array<>();
+        this.isBossDefeated = false;
+        this.isVisited = false;
+        this.lastSafeX = 0;
+        this.lastSafeY = 0;
+    }
+    public Array<Enemy> getAliveEnemies() {
+        return aliveEnemies;
+    }
+    public void setAliveEnemies(Array<Enemy> aliveEnemies) {
+        this.aliveEnemies = aliveEnemies;
+    }
+    public Array<Enemy> getDeadEnemies() {
+        return deadEnemies;
+    }
+    public void setDeadEnemies(Array<Enemy> deadEnemies) {
+        this.deadEnemies = deadEnemies;
+    }
+    public Array<String> getDestroyedObjects() {
+        return destroyedObjects;
+    }
+    public void setDestroyedObjects(Array<String> destroyedObjects) {
+        this.destroyedObjects = destroyedObjects;
+    }
+    public boolean isBossDefeated() {
+        return isBossDefeated;
+    }
+    public void setBossDefeated(boolean bossDefeated) {
+        isBossDefeated = bossDefeated;
+    }
+    public boolean isVisited() {
+        return isVisited;
+    }
+    public void setVisited(boolean visited) {
+        isVisited = visited;
+    }
+    public float getLastSafeX() {
+        return lastSafeX;
+    }
+    public void setLastSafeX(float lastSafeX) {
+        this.lastSafeX = lastSafeX;
+    }
+    public float getLastSafeY() {
+        return lastSafeY;
+    }
+    public void setLastSafeY(float lastSafeY) {
+        this.lastSafeY = lastSafeY;
+    }
+    public void addAliveEnemy(Enemy enemy) {
+        aliveEnemies.add(enemy);
+    }
+    public void moveEnemyToDead(Enemy enemy) {
+        aliveEnemies.removeValue(enemy, true);
+        deadEnemies.add(enemy);
+    }
+    public boolean isObjectDestroyed(String objectId) {
+        return destroyedObjects.contains(objectId, false);
+    }
+    public void destroyObject(String objectId) {
+        if (!destroyedObjects.contains(objectId, false)) {
+            destroyedObjects.add(objectId);
+        }
+    }
+    public void reset() {
+        aliveEnemies.clear();
+        deadEnemies.clear();
+        destroyedObjects.clear();
+        isBossDefeated = false;
+        isVisited = false;
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\SaveModel.java ---
+package ir.Ali.hollowknightme.model;
+public class SaveModel {
+    private final int slotNumber;
+    private boolean isEmpty;
+    private String locationName;
+    private int progressPercentage;
+    private String playTime;
+    public SaveModel(int slotNumber) {
+        this.slotNumber = slotNumber;
+        this.isEmpty = true;
+        this.locationName = "";
+        this.progressPercentage = 0;
+        this.playTime = "0m";
+    }
+    public SaveModel(int slotNumber, String locationName, int progressPercentage, String playTime) {
+        this.slotNumber = slotNumber;
+        this.isEmpty = false;
+        this.locationName = locationName;
+        this.progressPercentage = progressPercentage;
+        this.playTime = playTime;
+    }
+    public int getSlotNumber() { return slotNumber; }
+    public boolean isEmpty() { return isEmpty; }
+    public String getLocationName() { return locationName; }
+    public int getProgressPercentage() { return progressPercentage; }
+    public String getPlayTime() { return playTime; }
+    public void clear() {
+        this.isEmpty = true;
+        this.locationName = "";
+        this.progressPercentage = 0;
+        this.playTime = "0m";
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\SaveSlotComponent.java ---
+package ir.Ali.hollowknightme.model;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Array;
+import ir.Ali.hollowknightme.manager.ui.UIManager;
+public class SaveSlotComponent extends Table {
+    private SaveModel model;
+    private final Image frameImage;
+    private final Animation<TextureRegion> frameAnimation;
+    private float stateTime = 0f;
+    private boolean hasFrames = false;
+    private final Table infoTable;
+    private final Table profileClickZone;
+    private final TextBtn clearBtn;
+    private final Image leftArrow;
+    private final Image rightArrow;
+    public SaveSlotComponent(SaveModel model) {
+        this.model = model;
+        Array<TextureRegion> frames = new Array<>();
+        for (int i = 0; i <= 12; i++) {
+            String frameName = String.format("profile_fleur00%02d", i);
+            TextureRegion region = UIManager.getAtlas().findRegion(frameName);
+            if (region != null) {
+                frames.add(region);
+            }
+        }
+        frameAnimation = new Animation<>(0.06f, frames, Animation.PlayMode.NORMAL);
+        hasFrames = frames.size > 0;
+        frameImage = new Image();
+        leftArrow = new Image(UIManager.getSkin(), "arrow_left");
+        rightArrow = new Image(UIManager.getSkin(), "arrow_right");
+        leftArrow.setVisible(false);
+        rightArrow.setVisible(false);
+        Stack profileStack = new Stack();
+        profileStack.add(frameImage);
+        infoTable = new Table();
+        infoTable.padTop(40f);
+        profileStack.add(infoTable);
+        profileClickZone = new Table();
+        profileClickZone.add(leftArrow).padRight(20f);
+        profileClickZone.add(profileStack).width(650f).height(95f);
+        profileClickZone.add(rightArrow).padLeft(20f);
+        clearBtn = new TextBtn("CLEAR SAVE", -125f);
+        this.add(profileClickZone).left();
+        this.add(clearBtn).padLeft(70f).right();
+        setupHoverEngine();
+        updateVisuals();
+    }
+    private void setupHoverEngine() {
+        profileClickZone.addListener(new ClickListener() {
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                super.enter(event, x, y, pointer, fromActor);
+                leftArrow.setVisible(true);
+                rightArrow.setVisible(true);
+                leftArrow.clearActions();
+                leftArrow.addAction(Actions.forever(Actions.sequence(
+                    Actions.moveBy(-5f, 0f, 0.4f),
+                    Actions.moveBy(5f, 0f, 0.4f)
+                )));
+                rightArrow.clearActions();
+                rightArrow.addAction(Actions.forever(Actions.sequence(
+                    Actions.moveBy(5f, 0f, 0.4f),
+                    Actions.moveBy(-5f, 0f, 0.4f)
+                )));
+            }
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                super.exit(event, x, y, pointer, toActor);
+                leftArrow.setVisible(false);
+                rightArrow.setVisible(false);
+                leftArrow.clearActions();
+                rightArrow.clearActions();
+            }
+        });
+    }
+    public void updateModel(SaveModel newModel) {
+        this.model = newModel;
+        updateVisuals();
+    }
+    private void updateVisuals() {
+        infoTable.clearChildren();
+        String slotPrefix = model.getSlotNumber() + ".  ";
+        if (model.isEmpty()) {
+            Label newGameLabel = new Label(slotPrefix + "NEW GAME", UIManager.getSkin(), "Text");
+            infoTable.add(newGameLabel).left();
+            clearBtn.setVisible(false);
+        } else {
+            Table textData = new Table();
+            Label locationLabel = new Label(slotPrefix + model.getLocationName(), UIManager.getSkin(), "Text");
+            Label progressLabel = new Label(model.getProgressPercentage() + "%", UIManager.getSkin(), "Text");
+            Label timeLabel = new Label(model.getPlayTime(), UIManager.getSkin(), "Text");
+            textData.add(locationLabel).left().padBottom(6f).row();
+            Table subStats = new Table();
+            subStats.add(progressLabel).padRight(40f);
+            subStats.add(timeLabel);
+            textData.add(subStats).left();
+            infoTable.add(textData).left();
+            clearBtn.setVisible(true);
+        }
+    }
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        stateTime += delta;
+        if (hasFrames) {
+            frameImage.setDrawable(new TextureRegionDrawable(frameAnimation.getKeyFrame(stateTime)));
+        }
+    }
+    public SaveModel getModel() { return model; }
+    public Table getProfileClickZone() { return profileClickZone; }
+    public TextBtn getClearBtn() { return clearBtn; }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\TextBtn.java ---
+package ir.Ali.hollowknightme.model;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import ir.Ali.hollowknightme.manager.ui.UIManager;
+public class TextBtn extends Table {
+    private TextButton textButton;
+    private Image leftArrow;
+    private Image rightArrow;
+    private Image glowImage;
+    private final Skin skin = UIManager.getSkin();
+    public TextBtn(String text) {
+        this(text, 15f);
+    }
+    public TextBtn(String text, float arrowPadding) {
+        textButton = new TextButton(text, skin, "menu");
+        leftArrow = new Image(skin, "arrow_left");
+        rightArrow = new Image(skin, "arrow_right");
+        glowImage = new Image(skin, "glow");
+        leftArrow.setVisible(false);
+        rightArrow.setVisible(false);
+        glowImage.setVisible(false);
+        Stack centerStack = new Stack();
+        centerStack.add(glowImage);
+        centerStack.add(textButton);
+        this.add(leftArrow).padRight(arrowPadding);
+        this.add(centerStack);
+        this.add(rightArrow).padLeft(arrowPadding);
+        textButton.addListener(new ClickListener() {
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                super.enter(event, x, y, pointer, fromActor);
+                leftArrow.setVisible(true);
+                rightArrow.setVisible(true);
+                leftArrow.clearActions();
+                leftArrow.addAction(Actions.forever(Actions.sequence(
+                    Actions.moveBy(-5f, 0f, 0.4f),
+                    Actions.moveBy(5f, 0f, 0.4f)
+                )));
+                rightArrow.clearActions();
+                rightArrow.addAction(Actions.forever(Actions.sequence(
+                    Actions.moveBy(5f, 0f, 0.4f),
+                    Actions.moveBy(-5f, 0f, 0.4f)
+                )));
+            }
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                super.exit(event, x, y, pointer, toActor);
+                leftArrow.setVisible(false);
+                rightArrow.setVisible(false);
+                leftArrow.clearActions();
+                rightArrow.clearActions();
+                glowImage.setVisible(false);
+            }
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                glowImage.setVisible(true);
+                return super.touchDown(event, x, y, pointer, button);
+            }
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                super.touchUp(event, x, y, pointer, button);
+                glowImage.setVisible(false);
+            }
+        });
+    }
+    public void addClickListener(ClickListener listener) {
+        textButton.addListener(listener);
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\enemy\Enemy.java ---
+package ir.Ali.hollowknightme.model.enemy;
+public class Enemy {
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\entity\Knight.java ---
+package ir.Ali.hollowknightme.model.knight;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.World;
+import ir.Ali.hollowknightme.enums.knight.KnightState;
+public class Knight {
+    public static final float PPM = 100f;
+    private Body body;
+    private float width;
+    private float height;
+    private int maxHealth = 5;
+    private int currentHealth = 5;
+    private int soul = 0;
+    private final int MAX_SOUL = 99;
+    private boolean isFacingRight = true;
+    private KnightState currentKnightState = KnightState.IDLE;
+    private boolean isGrounded = false;
+    private boolean isOnWall = false;
+    private boolean canDoubleJump = false;
+    private boolean isJumpCut = false;
+    private boolean isOnCeiling = false;
+    private boolean isDashing = false;
+    private float jumpTime = 0f;
+    private boolean isJumpKeyHeld = false;
+    private boolean locked = false;
+    public boolean isOnCeiling() {
+        return isOnCeiling;
+    }
+    public void setOnCeiling(boolean onCeiling) {
+        isOnCeiling = onCeiling;
+    }
+    public boolean isDashing() {
+        return isDashing;
+    }
+    public void setDashing(boolean dashing) {
+        isDashing = dashing;
+    }
+    public float getJumpTime() {
+        return jumpTime;
+    }
+    public void setJumpTime(float jumpTime) {
+        this.jumpTime = jumpTime;
+    }
+    public boolean isJumpKeyHeld() {
+        return isJumpKeyHeld;
+    }
+    public void setJumpKeyHeld(boolean jumpKeyHeld) {
+        isJumpKeyHeld = jumpKeyHeld;
+    }
+    public Knight(World world, float x, float y, float width, float height) {
+        this.width = width;
+        this.height = height;
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.position.set(x / PPM, y / PPM);
+        bodyDef.type = BodyDef.BodyType.DynamicBody;
+        this.body = world.createBody(bodyDef);
+        this.body.setFixedRotation(true);
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox((width / 2f) / PPM, (height / 2f) / PPM);
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        fixtureDef.friction = 0.4f;
+        fixtureDef.restitution = 0f;
+        this.body.createFixture(fixtureDef);
+        shape.dispose();
+    }
+    public float getX() { return (body.getPosition().x * PPM) - (width / 2f); }
+    public float getY() { return (body.getPosition().y * PPM) - (height / 2f); }
+    public float getWidth() { return width; }
+    public float getHeight() { return height; }
+    public Body getBody() { return body; }
+    public int getMaxHealth() { return maxHealth; }
+    public int getCurrentHealth() { return currentHealth; }
+    public void setCurrentHealth(int currentHealth) { this.currentHealth = currentHealth; }
+    public int getSoul() { return soul; }
+    public void setSoul(int soul) { this.soul = soul; }
+    public int getMAX_SOUL() { return MAX_SOUL; }
+    public boolean isFacingRight() { return isFacingRight; }
+    public void setFacingRight(boolean facingRight) { this.isFacingRight = facingRight; }
+    public KnightState getCurrentState() { return currentKnightState; }
+    public void setCurrentState(KnightState currentKnightState) { this.currentKnightState = currentKnightState; }
+    public boolean isGrounded() { return isGrounded; }
+    public void setGrounded(boolean grounded) { this.isGrounded = grounded; }
+    public boolean isOnWall() { return isOnWall; }
+    public void setOnWall(boolean onWall) { this.isOnWall = onWall; }
+    public boolean isCanDoubleJump() { return canDoubleJump; }
+    public void setCanDoubleJump(boolean canDoubleJump) { this.canDoubleJump = canDoubleJump; }
+    public boolean isJumpCut() { return isJumpCut; }
+    public void setJumpCut(boolean jumpCut) { this.isJumpCut = jumpCut; }
+    public boolean isLocked() {
+        return locked;
+    }
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+    public void respawn(float x, float y) {
+        body.setTransform(x / PPM, y / PPM, 0);
+        body.setLinearVelocity(0, 0);
+        setGrounded(false);
+        setOnWall(false);
+        setOnCeiling(false);
+        setDashing(false);
+        setCanDoubleJump(false);
+        setLocked(false);
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\map\GameMap.java ---
+package ir.Ali.hollowknightme.model.map;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Array;
+public class GameMap {
+    private final Array<Rectangle> solidObstacles;
+    public GameMap() {
+        solidObstacles = new Array<>();
+        solidObstacles.add(new Rectangle(0, 0, 2000, 50));
+        solidObstacles.add(new Rectangle(0, 50, 50, 600));
+        solidObstacles.add(new Rectangle(800, 50, 50, 400));
+    }
+    public Array<Rectangle> getSolidObstacles() {
+        return solidObstacles;
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\map\GroundData.java ---
+package ir.Ali.hollowknightme.model.map;
+import com.badlogic.gdx.math.Rectangle;
+public class GroundData {
+    private Rectangle rectangle;
+    private GroundType type;
+    private boolean leftActive;
+    private boolean rightActive;
+    private boolean topActive;
+    private boolean bottomActive;
+    public GroundData(Rectangle rectangle, GroundType type,
+                      boolean leftActive, boolean rightActive,
+                      boolean topActive, boolean bottomActive) {
+        this.rectangle = rectangle;
+        this.type = type;
+        this.leftActive = leftActive;
+        this.rightActive = rightActive;
+        this.topActive = topActive;
+        this.bottomActive = bottomActive;
+    }
+    public Rectangle getRectangle() { return rectangle; }
+    public GroundType getType() { return type; }
+    public boolean isLeftActive() { return leftActive; }
+    public boolean isRightActive() { return rightActive; }
+    public boolean isTopActive() { return topActive; }
+    public boolean isBottomActive() { return bottomActive; }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\map\GroundType.java ---
+package ir.Ali.hollowknightme.model.map;
+public enum GroundType {
+    WALL,
+    FLOOR,
+    GROUND,
+    PLATFORM,
+    THORN
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\map\MapData.java ---
+package ir.Ali.hollowknightme.model.map;
+import com.badlogic.gdx.utils.Array;
+public class MapData {
+    private Array<GroundData> grounds = new Array<>();
+    private Array<TransitionData> transitions = new Array<>();
+    private Array<SpawnData> spawns = new Array<>();
+    private Array<RangeData> ranges = new Array<>();
+    public void addGround(GroundData ground) { grounds.add(ground); }
+    public void addTransition(TransitionData transition) { transitions.add(transition); }
+    public void addSpawn(SpawnData spawn) { spawns.add(spawn); }
+    public void addRange(RangeData range) { ranges.add(range); }
+    public Array<GroundData> getGrounds() { return grounds; }
+    public Array<TransitionData> getTransitions() { return transitions; }
+    public Array<SpawnData> getSpawns() { return spawns; }
+    public Array<RangeData> getRanges() { return ranges; }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\map\RangeData.java ---
+package ir.Ali.hollowknightme.model.map;
+import com.badlogic.gdx.math.Rectangle;
+public class RangeData {
+    private Rectangle rectangle;
+    private RangeType type;
+    public RangeData(Rectangle rectangle, RangeType type) {
+        this.rectangle = rectangle;
+        this.type = type;
+    }
+    public Rectangle getRectangle() { return rectangle; }
+    public RangeType getType() { return type; }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\map\RangeType.java ---
+package ir.Ali.hollowknightme.model.map;
+public enum RangeType {
+    PATROL,
+    SIGHT,
+    ATTACK
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\map\SpawnData.java ---
+package ir.Ali.hollowknightme.model.map;
+import com.badlogic.gdx.math.Vector2;
+public class SpawnData {
+    private Vector2 position;
+    private SpawnType type;
+    private boolean facingRight;
+    public SpawnData(Vector2 position, SpawnType type, boolean facingRight) {
+        this.position = position;
+        this.type = type;
+        this.facingRight = facingRight;
+    }
+    public Vector2 getPosition() { return position; }
+    public SpawnType getType() { return type; }
+    public boolean isFacingRight() { return facingRight; }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\map\SpawnType.java ---
+package ir.Ali.hollowknightme.model.map;
+public enum SpawnType {
+    PLAYER,
+    ENEMY,
+    NPC
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\map\TransitionData.java ---
+package ir.Ali.hollowknightme.model.map;
+import com.badlogic.gdx.math.Rectangle;
+public class TransitionData {
+    private Rectangle rectangle;
+    private TransitionType type;
+    public TransitionData(Rectangle rectangle, TransitionType type) {
+        this.rectangle = rectangle;
+        this.type = type;
+    }
+    public Rectangle getRectangle() { return rectangle; }
+    public TransitionType getType() { return type; }
+    public boolean isInput() {
+        return type == TransitionType.INPUT;
+    }
+    public boolean isOutput() {
+        return type == TransitionType.OUTPUT;
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\model\map\TransitionType.java ---
+package ir.Ali.hollowknightme.model.map;
+public enum TransitionType {
+    INPUT,
+    OUTPUT,
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\view\KnightAnimator.java ---
+package ir.Ali.hollowknightme.view;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.utils.Array;
+import ir.Ali.hollowknightme.enums.knight.KnightState;
+import ir.Ali.hollowknightme.model.knight.Knight;
+import java.util.EnumMap;
+public class KnightAnimator {
+    private final Knight knight;
+    private static final EnumMap<KnightState, Animation<TextureRegion>> animations =
+        new EnumMap<>(KnightState.class);
+    private float stateTime = 0f;
+    private KnightState previousState = KnightState.IDLE;
+    public KnightAnimator(Knight knight, TextureAtlas atlas) {
+        this.knight = knight;
+        initAnimations(atlas);
+    }
+    private void initAnimations(TextureAtlas atlas) {
+        for (KnightState state : KnightState.values()) {
+            String atlasRegionName = getAtlasRegionName(state);
+            Array<TextureAtlas.AtlasRegion> regions = atlas.findRegions(atlasRegionName);
+            if (regions.size == 0) {
+                state = KnightState.IDLE;
+                atlasRegionName = getAtlasRegionName(state);
+                regions = atlas.findRegions(atlasRegionName);
+            }
+            float frameDuration = getFrameDurationForState(state);
+            Animation.PlayMode playMode = getPlayModeForState(state);
+            Animation<TextureRegion> animation = new Animation<>(frameDuration, regions, playMode);
+            animations.put(state, animation);
+        }
+    }
+    private String getAtlasRegionName(KnightState state) {
+        switch (state) {
+            case DOUBLE_JUMP: return "Double Jump";
+            case DOWN_SLASH: return "DownSlash";
+            case FIREBALL_CAST: return "Fireball Cast";
+            case FOCUS_GET: return "Focus Get";
+            case FOCUS_START: return "Focus Start";
+            case FOCUS_END: return "Focus End";
+            case IDLE_HURT: return "Idle Hurt";
+            case LOOK_DOWN: return "LookDown";
+            case LOOK_UP: return "LookUp";
+            case SLASH_ALT: return "SlashAlt";
+            case UP_SLASH: return "UpSlash";
+            case WALL_SLIDE: return "Wall Slide";
+            case WALL_JUMP: return "Walljump";
+            case TRANSITION: return "run";
+            default:
+                String name = state.name().toLowerCase();
+                return name.substring(0, 1).toUpperCase() + name.substring(1);
+        }
+    }
+    private float getFrameDurationForState(KnightState state) {
+        switch (state) {
+            case DASH: return 0.04f;
+            case RUN: return 0.1f;
+            case SLASH: return 0.9f;
+            case SLASH_ALT: return 0.05f;
+            case DEATH: return 0.18f;
+            default: return 0.12f;
+        }
+    }
+    private Animation.PlayMode getPlayModeForState(KnightState state) {
+        switch (state) {
+            case IDLE:
+            case RUN:
+            case AIRBORNE:
+            case WALL_SLIDE:
+            case FOCUS:
+                return Animation.PlayMode.LOOP;
+            default:
+                return Animation.PlayMode.NORMAL;
+        }
+    }
+    public TextureRegion getFrame(float deltaTime, KnightState currentState) {
+        if (currentState != previousState) {
+            stateTime = 0f;
+        } else {
+            stateTime += deltaTime;
+        }
+        previousState = currentState;
+        Animation<TextureRegion> currentAnimation = animations.get(currentState);
+        if (currentAnimation == null) return null;
+        TextureRegion frame = currentAnimation.getKeyFrame(stateTime);
+        if (knight.isFacingRight() && !frame.isFlipX()) {
+            frame.flip(true, false);
+        } else if (!knight.isFacingRight() && frame.isFlipX()) {
+            frame.flip(true, false);
+        }
+        return frame;
+    }
+    public static float getAnimationDuration(KnightState state) {
+        Animation<TextureRegion> anim = animations.get(state);
+        if (anim == null) return 0.3f;
+        return anim.getAnimationDuration();
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\view\PlayerView.java ---
+package ir.Ali.hollowknightme.view;
+public class PlayerView {
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\view\animation\AnimatedImage.java ---
+package ir.Ali.hollowknightme.view.animation;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+public class AnimatedImage extends Image {
+    private final Animation<TextureRegion> animation;
+    private float stateTime = 0f;
+    public AnimatedImage(Animation<TextureRegion> animation) {
+        super(animation.getKeyFrame(0));
+        this.animation = animation;
+    }
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        stateTime += delta;
+        if (!animation.isAnimationFinished(stateTime)) {
+            setDrawable(new TextureRegionDrawable(animation.getKeyFrame(stateTime)));
+        } else {
+            setDrawable(new TextureRegionDrawable(animation.getKeyFrame(animation.getAnimationDuration())));
+        }
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\view\screens\AchievementScreen.java ---
+package ir.Ali.hollowknightme.view.screens;
+public class AchievementScreen {
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\view\screens\BaseScreen.java ---
+package ir.Ali.hollowknightme.view.screens;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+public abstract class BaseScreen extends ScreenAdapter {
+    protected Stage stage;
+    public BaseScreen() {
+        stage = new Stage(new FitViewport(1920, 1080));
+    }
+    @Override
+    public void show() {
+        Gdx.input.setInputProcessor(stage);
+    }
+    @Override
+    public void render(float delta) {
+        stage.act(delta);
+        stage.draw();
+    }
+    @Override
+    public void resize(int width, int height) {
+        stage.getViewport().update(width, height, true);
+    }
+    @Override
+    public void dispose() {
+        stage.dispose();
+    }
+    public Stage getStage() {
+        return stage;
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\view\screens\GameOverScreen.java ---
+package ir.Ali.hollowknightme.view.screens;
+public class GameOverScreen {
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\view\screens\GameScreen.java ---
+package ir.Ali.hollowknightme.view.screens;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
+import ir.Ali.hollowknightme.controller.knight.KnightContactListener;
+import ir.Ali.hollowknightme.controller.knight.KnightController;
+import ir.Ali.hollowknightme.manager.*;
+import ir.Ali.hollowknightme.model.enviroment.Environment;
+import ir.Ali.hollowknightme.model.enviroment.Room;
+import ir.Ali.hollowknightme.model.knight.Knight;
+import ir.Ali.hollowknightme.model.map.MapData;
+import ir.Ali.hollowknightme.model.map.SpawnData;
+import ir.Ali.hollowknightme.model.map.SpawnType;
+import ir.Ali.hollowknightme.view.knight.KnightAnimator;
+import java.util.List;
+public class GameScreen extends BaseScreen {
+    private final OrthographicCamera camera;
+    private final Viewport viewport;
+    private final SpriteBatch batch;
+    private final MapManager mapManager;
+    private final World world;
+    private final Box2DDebugRenderer box2DDebugRenderer;
+    private final Knight knight;
+    private final KnightController knightController;
+    private final KnightAnimator knightAnimator;
+    private final TextureAtlas knightAtlas;
+    private TransitionManager transitionManager;
+    private CompositeContactListener compositeContactListener;
+    private List<com.badlogic.gdx.physics.box2d.Body> worldBodies;
+    public GameScreen(String mapPath) {
+        super();
+        camera = new OrthographicCamera();
+        viewport = new FitViewport(1920f / Knight.PPM, 1080f / Knight.PPM, camera);
+        batch = new SpriteBatch();
+        world = new World(new Vector2(0, -10f), true);
+        box2DDebugRenderer = new Box2DDebugRenderer();
+        mapManager = new MapManager();
+        mapManager.loadMap(mapPath);
+        MapData mapData = mapManager.getMapData();
+        Environment environment = new Environment("Default");
+        Room room = new Room(mapPath, mapData);
+        environment.addRoom(room);
+        MapManager secondManager = new MapManager();
+        secondManager.loadMap("room2.tmx");
+        Room room2 = new Room("room2.tmx", secondManager.getMapData());
+        environment.addRoom(room2);
+        GameStateManager.getInstance().setCurrentEnvironment(environment);
+        worldBodies = PhysicsBuilder.buildPhysics(world, mapData);
+        Vector2 spawnPosition = getSpawnPosition(mapData);
+        if (spawnPosition == null) {
+            System.err.println("No player spawn found! Using default (0,0).");
+            spawnPosition = new Vector2(0, 0);
+        }
+        GameStateManager.getInstance().updateSafePosition(spawnPosition.x, spawnPosition.y);
+        knight = new Knight(world, spawnPosition.x * Knight.PPM, spawnPosition.y * Knight.PPM, 40f, 80f);
+        knightController = new KnightController(knight);
+        compositeContactListener = new CompositeContactListener();
+        compositeContactListener.addListener(new KnightContactListener(knight));
+        transitionManager = new TransitionManager(knight, mapManager, world);
+        transitionManager.setWorldBodies(worldBodies);
+        compositeContactListener.addListener(transitionManager);
+        world.setContactListener(compositeContactListener);
+        knightAtlas = new TextureAtlas(Gdx.files.internal("assets/knight.atlas"));
+        knightAnimator = new KnightAnimator(knight, knightAtlas);
+        camera.position.set(spawnPosition.x, spawnPosition.y, 0);
+        camera.update();
+    }
+    private Vector2 getSpawnPosition(MapData mapData) {
+        if (mapData == null || mapData.getSpawns().size == 0) {
+            return null;
+        }
+        for (SpawnData spawn : mapData.getSpawns()) {
+            if (spawn.getType() == SpawnType.PLAYER) {
+                return spawn.getPosition().cpy().scl(1f / Knight.PPM);
+            }
+        }
+        return mapData.getSpawns().first().getPosition().cpy().scl(1f / Knight.PPM);
+    }
+    private void update(float delta) {
+        world.step(1 / 60f, 6, 2);
+        transitionManager.update();
+        knightController.update(delta);
+        float mapWidth = mapManager.getMapWidth();
+        float mapHeight = mapManager.getMapHeight();
+        if (mapWidth == 0 || mapHeight == 0) {
+            camera.position.set(knight.getBody().getPosition().x, knight.getBody().getPosition().y, 0);
+        } else {
+            float halfViewportWidth = viewport.getWorldWidth() / 2f;
+            float halfViewportHeight = viewport.getWorldHeight() / 2f;
+            float targetX = knight.getBody().getPosition().x;
+            float targetY = knight.getBody().getPosition().y;
+            float clampedX = Math.max(halfViewportWidth, Math.min(mapWidth - halfViewportWidth, targetX));
+            float clampedY = Math.max(halfViewportHeight, Math.min(mapHeight - halfViewportHeight, targetY));
+            camera.position.set(clampedX, clampedY, 0);
+        }
+        camera.update();
+    }
+    @Override
+    public void render(float delta) {
+        update(delta);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        mapManager.render(camera);
+        batch.setProjectionMatrix(camera.combined);
+        batch.begin();
+        TextureRegion frame = knightAnimator.getFrame(delta, knight.getCurrentState());
+        if (frame != null) {
+            float width = frame.getRegionWidth() / Knight.PPM;
+            float height = frame.getRegionHeight() / Knight.PPM;
+            float x = knight.getBody().getPosition().x - width / 2f;
+            float y = knight.getBody().getPosition().y - height / 2f;
+            batch.draw(frame, x, y, width, height);
+        } else {
+            System.err.println("Knight frame is null!");
+        }
+        batch.end();
+        box2DDebugRenderer.render(world, camera.combined);
+        super.render(delta);
+    }
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        viewport.update(width, height, true);
+    }
+    @Override
+    public void dispose() {
+        super.dispose();
+        mapManager.dispose();
+        world.dispose();
+        box2DDebugRenderer.dispose();
+        batch.dispose();
+        knightAtlas.dispose();
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\view\screens\GuideView.java ---
+package ir.Ali.hollowknightme.view.screens;
+import ir.Ali.hollowknightme.controller.screens.GuideController;
+import ir.Ali.hollowknightme.model.ui.HollowMenuPanel;
+public class GuideView extends BaseScreen {
+    private final HollowMenuPanel mainPanel;
+    public GuideView() {
+        mainPanel = new HollowMenuPanel("GUIDE");
+        stage.addActor(mainPanel);
+        new GuideController(this);
+    }
+    public HollowMenuPanel getMainPanel() {
+        return mainPanel;
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\view\screens\InventoryScreen.java ---
+package ir.Ali.hollowknightme.view.screens;
+public class InventoryScreen {
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\view\screens\MainMenuView.java ---
+package ir.Ali.hollowknightme.view.screens;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Scaling;
+import ir.Ali.hollowknightme.controller.screens.MainMenuController;
+import ir.Ali.hollowknightme.manager.ui.UIManager;
+import ir.Ali.hollowknightme.model.ui.TextBtn;
+import ir.Ali.hollowknightme.view.animation.AnimatedImage;
+public class MainMenuView extends BaseScreen {
+    private Image backgroundImage;
+    private Image logoImage;
+    private AnimatedImage topOrnament;
+    private AnimatedImage bottomOrnament;
+    private TextBtn startGameBtn;
+    private TextBtn optionsBtn;
+    private TextBtn achievementsBtn;
+    private TextBtn extrasBtn;
+    private TextBtn quitGameBtn;
+    private MainMenuController controller;
+    public MainMenuView() {
+        super();
+        TextureRegion bgRegion = UIManager.getAtlas().findRegion("main_menu_bg");
+        if(bgRegion != null) {
+            backgroundImage = new Image(new TextureRegionDrawable(bgRegion));
+            backgroundImage.setScaling(Scaling.fill);
+            backgroundImage.setFillParent(true);
+            stage.addActor(backgroundImage);
+        }
+        Table rootTable = new Table();
+        rootTable.setFillParent(true);
+        rootTable.top();
+        Table contentTable = new Table();
+        Array<TextureRegion> topFrames = new Array<>();
+        for (int i = 0; i <= 4; i++) {
+            String regionName = "gg_board_UI_bottom_000" + i;
+            TextureRegion region = UIManager.getAtlas().findRegion(regionName);
+            if (region != null) {
+                topFrames.add(region);
+            }
+        }
+        if (topFrames.size > 0) {
+            Animation<TextureRegion> topAnim = new Animation<>(0.1f, topFrames, Animation.PlayMode.NORMAL);
+            topOrnament = new AnimatedImage(topAnim);
+            contentTable.add(topOrnament).padBottom(5f).top().row();
+        }
+        TextureRegion logoRegion = UIManager.getAtlas().findRegion("logo");
+        if (logoRegion != null) {
+            logoImage = new Image(new TextureRegionDrawable(logoRegion));
+            contentTable.add(logoImage).padBottom(-100f).top().row();
+        }
+        Array<TextureRegion> bottomFrames = new Array<>();
+        for (int i = 0; i <= 7; i++) {
+            String regionName = "GG_board_top_fleur000" + i;
+            TextureRegion region = UIManager.getAtlas().findRegion(regionName);
+            if (region != null) {
+                bottomFrames.add(region);
+            }
+        }
+        if (bottomFrames.size > 0) {
+            Animation<TextureRegion> bottomAnim = new Animation<>(0.1f, bottomFrames, Animation.PlayMode.NORMAL);
+            bottomOrnament = new AnimatedImage(bottomAnim);
+            contentTable.add(bottomOrnament).padBottom(-370f).top().row();
+        }
+        startGameBtn = new TextBtn("START GAME", -20);
+        optionsBtn = new TextBtn("OPTIONS" , -20);
+        achievementsBtn = new TextBtn("ACHIEVEMENTS" , -20);
+        extrasBtn = new TextBtn("EXTRAS" , -20);
+        quitGameBtn = new TextBtn("QUIT GAME" , -20);
+        Label text = new Label("Created By <Ali Esmaeili>" , UIManager.getSkin() , "default");
+        contentTable.add(startGameBtn).top().padBottom(15f).row();
+        contentTable.add(optionsBtn).padBottom(15f).top().row();
+        contentTable.add(achievementsBtn).padBottom(15f).top().row();
+        contentTable.add(extrasBtn).padBottom(15f).top().row();
+        contentTable.add(quitGameBtn).padBottom(30f).top().row();
+        contentTable.add(text).padBottom(15f).top().row();
+        rootTable.add(contentTable).top();
+        stage.addActor(rootTable);
+        contentTable.setColor(1, 1, 1, 0);
+        contentTable.addAction(Actions.fadeIn(1.3f));
+        controller = new MainMenuController(this);
+    }
+    public TextBtn getStartGameBtn() { return startGameBtn; }
+    public TextBtn getOptionsBtn() { return optionsBtn; }
+    public TextBtn getAchievementsBtn() { return achievementsBtn; }
+    public TextBtn getExtrasBtn() { return extrasBtn; }
+    public TextBtn getQuitGameBtn() { return quitGameBtn; }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\view\screens\PauseScreen.java ---
+package ir.Ali.hollowknightme.view.screens;
+public class PauseScreen {
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\view\screens\SettingsView.java ---
+package ir.Ali.hollowknightme.view.screens;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Scaling;
+import ir.Ali.hollowknightme.controller.screens.SettingsController;
+import ir.Ali.hollowknightme.manager.ui.UIManager;
+import ir.Ali.hollowknightme.model.ui.CheckBoxDi;
+import ir.Ali.hollowknightme.model.ui.HollowMenuPanel;
+import ir.Ali.hollowknightme.model.ui.TextBtn;
+public class SettingsView extends BaseScreen {
+    private HollowMenuPanel mainPanel;
+    private Slider musicVolumeSlider;
+    private Slider brightnessSlider;
+    private CheckBoxDi musicMuteCheck;
+    private CheckBoxDi sfxMuteCheck;
+    private TextBtn resetSoundsBtn;
+    private TextBtn keyBindsBtn;
+    private TextBtn resetBindsBtn;
+    private TextBtn languageBtn;
+    private Image backgroundImage;
+    private SettingsController controller;
+    public SettingsView() {
+        super();
+        TextureRegion bgRegion = UIManager.getAtlas().findRegion("main_menu_bg");
+        if(bgRegion != null) {
+            backgroundImage = new Image(new TextureRegionDrawable(bgRegion));
+            backgroundImage.setScaling(Scaling.fill);
+            backgroundImage.setFillParent(true);
+            stage.addActor(backgroundImage);
+        }
+        mainPanel = new HollowMenuPanel("SETTINGS");
+        Table bodyTable = new Table();
+        Label musicVolLabel = new Label("Music Volume", UIManager.getSkin(), "Text");
+        musicVolumeSlider = new Slider(0f, 1f, 0.1f, false,
+            UIManager.getSkin() , "slider");
+        Label brightnessLabel = new Label("Brightness", UIManager.getSkin(),
+            "Text" );
+        brightnessSlider = new Slider(0.1f, 1f, 0.1f, false,
+            UIManager.getSkin() , "slider");
+        musicMuteCheck = new CheckBoxDi("Mute Music", "Disabled");
+        sfxMuteCheck = new CheckBoxDi("Mute SFX", "Disabled");
+        resetSoundsBtn = new TextBtn("RESET" , -200f);
+        keyBindsBtn = new TextBtn("CHANGE" , -200f);
+        resetBindsBtn = new TextBtn("RESET" , -200f);
+        languageBtn = new TextBtn("CHANGE LANGUAG" , -200f);
+        bodyTable.add(musicVolLabel).left().padRight(20f);
+        bodyTable.add(musicVolumeSlider).left().width(350f).padRight(20f);
+        bodyTable.add(resetSoundsBtn).row();
+        bodyTable.add(brightnessLabel).left().padRight(20f);
+        bodyTable.add(brightnessSlider).width(350f);
+        bodyTable.add(resetBindsBtn).row();
+        bodyTable.add(musicMuteCheck).left().padBottom(15f).colspan(2).row();
+        bodyTable.add(sfxMuteCheck).left().padBottom(30f).colspan(2).row();
+        mainPanel.setBody(bodyTable);
+        stage.addActor(mainPanel);
+        controller = new SettingsController(this);
+    }
+    public HollowMenuPanel getMainPanel() { return mainPanel; }
+    public Slider getMusicVolumeSlider() { return musicVolumeSlider; }
+    public Slider getBrightnessSlider() { return brightnessSlider; }
+    public CheckBoxDi getMusicMuteCheck() { return musicMuteCheck; }
+    public CheckBoxDi getSfxMuteCheck() { return sfxMuteCheck; }
+    public TextBtn getResetSoundsBtn() { return resetSoundsBtn; }
+    public TextBtn getKeyBindsBtn() { return keyBindsBtn; }
+    public TextBtn getResetBindsBtn() { return resetBindsBtn; }
+    public TextBtn getLanguageBtn() { return languageBtn; }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\view\screens\StartGameView.java ---
+package ir.Ali.hollowknightme.view.screens;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Scaling;
+import ir.Ali.hollowknightme.controller.screens.StartGameController;
+import ir.Ali.hollowknightme.manager.ui.UIManager;
+import ir.Ali.hollowknightme.model.ui.HollowMenuPanel;
+import ir.Ali.hollowknightme.model.save.SaveModel;
+import ir.Ali.hollowknightme.model.save.SaveSlotComponent;
+public class StartGameView extends BaseScreen {
+    private final HollowMenuPanel mainPanel;
+    private final SaveSlotComponent[] slots;
+    private final StartGameController controller;
+    private Image backgroundImage;
+    public StartGameView() {
+        super();
+        TextureRegion bgRegion = UIManager.getAtlas().findRegion("main_menu_bg");
+        if(bgRegion != null) {
+            backgroundImage = new Image(new TextureRegionDrawable(bgRegion));
+            backgroundImage.setScaling(Scaling.fill);
+            backgroundImage.setFillParent(true);
+            stage.addActor(backgroundImage);
+        }
+        mainPanel = new HollowMenuPanel("SELECT PROFILE");
+        slots = new SaveSlotComponent[4];
+        Table bodyTable = new Table();
+        SaveModel[] mockModels = new SaveModel[]{
+            new SaveModel(1, "DIRTMOUTH", 15, "2h 14m"),
+            new SaveModel(2, "CROSSROADS", 45, "12h 05m"),
+            new SaveModel(3),
+            new SaveModel(4)
+        };
+        for (int i = 0; i < 4; i++) {
+            slots[i] = new SaveSlotComponent(mockModels[i]);
+            bodyTable.add(slots[i]).padBottom(25f).row();
+        }
+        mainPanel.setBody(bodyTable);
+        stage.addActor(mainPanel);
+        controller = new StartGameController(this);
+    }
+    public HollowMenuPanel getMainPanel() {
+        return mainPanel;
+    }
+    public SaveSlotComponent[] getSlots() {
+        return slots;
+    }
+}
+
+--- FILE: .\core\src\main\java\ir\Ali\hollowknightme\view\screens\VictoryScreen.java ---
+package ir.Ali.hollowknightme.view.screens;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+public class VictoryScreen extends ScreenViewport
+{
+}
+
+--- FILE: .\lwjgl3\src\main\java\ir\Ali\hollowknightme\lwjgl3\Lwjgl3Launcher.java ---
+package ir.Ali.hollowknightme.lwjgl3;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import ir.Ali.hollowknightme.Main;
+public class Lwjgl3Launcher {
+    public static void main(String[] args) {
+        if (StartupHelper.startNewJvmIfRequired()) return;
+        createApplication();
+    }
+    private static Lwjgl3Application createApplication() {
+        return new Lwjgl3Application(new Main(), getDefaultConfiguration());
+    }
+    private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
+        Lwjgl3ApplicationConfiguration configuration = new Lwjgl3ApplicationConfiguration();
+        configuration.setTitle("HollowKnight");
+        configuration.useVsync(true);
+        configuration.setForegroundFPS(Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate + 1);
+        configuration.setWindowedMode(1440, 810);
+        configuration.setWindowIcon("libgdx128.png", "libgdx64.png", "libgdx32.png", "libgdx16.png");
+        return configuration;
+    }
+}
+
+--- FILE: .\lwjgl3\src\main\java\ir\Ali\hollowknightme\lwjgl3\StartupHelper.java ---
+package ir.Ali.hollowknightme.lwjgl3;
+import com.badlogic.gdx.Version;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3NativesLoader;
+import org.lwjgl.system.JNI;
+import org.lwjgl.system.linux.UNISTD;
+import org.lwjgl.system.macosx.LibC;
+import org.lwjgl.system.macosx.ObjCRuntime;
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+public class StartupHelper {
+	private StartupHelper() {}
+	private static final String JVM_RESTARTED_ARG = "jvmIsRestarted";
+	public static boolean isLinuxNvidia() {
+		String[] drivers = new File("/proc/driver").list(
+			(dir, path) -> path.toUpperCase(Locale.ROOT).contains("NVIDIA")
+		);
+		if (drivers == null) return false;
+		return drivers.length > 0;
+	}
+	public static boolean startNewJvmIfRequired() {
+		return startNewJvmIfRequired(true);
+	}
+	public static boolean startNewJvmIfRequired(boolean inheritIO) {
+		String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+		if (osName.contains("mac")) return startNewJvm0( true, inheritIO);
+		if (osName.contains("windows")) {
+			String programData = System.getenv("ProgramData");
+			if (programData == null) programData = "C:\\Temp";
+			String prevTmpDir = System.getProperty("java.io.tmpdir", programData);
+			String prevUser = System.getProperty("user.name", "libGDX_User");
+			System.setProperty("java.io.tmpdir", programData + "\\libGDX-temp");
+			System.setProperty(
+				"user.name",
+				("User_" + prevUser.hashCode() + "_GDX" + Version.VERSION).replace('.', '_')
+			);
+			Lwjgl3NativesLoader.load();
+			System.setProperty("java.io.tmpdir", prevTmpDir);
+			System.setProperty("user.name", prevUser);
+			return false;
+		}
+		return startNewJvm0( false, inheritIO);
+	}
+	private static final String MAC_JRE_ERR_MSG = "A Java installation could not be found. If you are distributing this app with a bundled JRE, be sure to set the '-XstartOnFirstThread' argument manually!";
+	private static final String LINUX_JRE_ERR_MSG = "A Java installation could not be found. If you are distributing this app with a bundled JRE, be sure to set the environment variable '__GL_THREADED_OPTIMIZATIONS' to '0'!";
+	private static final String CHILD_LOOP_ERR_MSG = "The current JVM process is a spawned child JVM process, but StartupHelper has attempted to spawn another child JVM process! This is a broken state, and should not normally happen! Your game may crash or not function properly!";
+	public static boolean startNewJvm0(boolean isMac, boolean inheritIO) {
+		long processID = getProcessID(isMac);
+		if (!isMac) {
+			if (!isLinuxNvidia()) return false;
+			if ("0".equals(System.getenv("__GL_THREADED_OPTIMIZATIONS"))) return false;
+		} else {
+			if (!System.getProperty("org.graalvm.nativeimage.imagecode", "").isEmpty()) return false;
+			long objcMsgSend = ObjCRuntime.getLibrary().getFunctionAddress("objc_msgSend");
+			long nsThread = ObjCRuntime.objc_getClass("NSThread");
+			long currentThread = JNI.invokePPP(nsThread, ObjCRuntime.sel_getUid("currentThread"), objcMsgSend);
+			boolean isMainThread = JNI.invokePPZ(currentThread, ObjCRuntime.sel_getUid("isMainThread"), objcMsgSend);
+			if (isMainThread) return false;
+			if ("1".equals(System.getenv("JAVA_STARTED_ON_FIRST_THREAD_" + processID))) return false;
+		}
+		if ("true".equals(System.getProperty(JVM_RESTARTED_ARG))) {
+			System.err.println(CHILD_LOOP_ERR_MSG);
+			return false;
+		}
+		List<String> jvmArgs = new ArrayList<>();
+		String javaExecPath = System.getProperty("java.home") + "/bin/java";
+		if (!(new File(javaExecPath).exists())) {
+			System.err.println(getJreErrMsg(isMac));
+			return false;
+		}
+		jvmArgs.add(javaExecPath);
+		if (isMac) jvmArgs.add("-XstartOnFirstThread");
+		jvmArgs.add("-D" + JVM_RESTARTED_ARG + "=true");
+		jvmArgs.addAll(ManagementFactory.getRuntimeMXBean().getInputArguments());
+		jvmArgs.add("-cp");
+		jvmArgs.add(System.getProperty("java.class.path"));
+		String mainClass = System.getenv("JAVA_MAIN_CLASS_" + processID);
+		if (mainClass == null) {
+			StackTraceElement[] trace = Thread.currentThread().getStackTrace();
+			if (trace.length > 0) mainClass = trace[trace.length - 1].getClassName();
+			else {
+				System.err.println("The main class could not be determined.");
+				return false;
+			}
+		}
+		jvmArgs.add(mainClass);
+		try {
+			ProcessBuilder processBuilder = new ProcessBuilder(jvmArgs);
+			if (!isMac) processBuilder.environment().put("__GL_THREADED_OPTIMIZATIONS", "0");
+			if (!inheritIO) processBuilder.start();
+			else processBuilder.inheritIO().start().waitFor();
+		} catch (Exception e) {
+			System.err.println("There was a problem restarting the JVM.");
+			e.printStackTrace();
+		}
+		return true;
+	}
+	private static String getJreErrMsg(boolean isMac) {
+		if (isMac) return MAC_JRE_ERR_MSG;
+		else return LINUX_JRE_ERR_MSG;
+	}
+	private static long getProcessID(boolean isMac) {
+		if (isMac) return LibC.getpid();
+		else return UNISTD.getpid();
+	}
+}
+

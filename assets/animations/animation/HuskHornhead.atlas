@@ -1,0 +1,169 @@
+HuskHornhead.png
+size:2048,512
+repeat:none
+Attack Anticipate
+index:4
+bounds:1374,280,159,107
+offsets:9,10,239,219
+Attack Anticipate
+index:3
+bounds:1184,161,151,115
+offsets:20,10,239,219
+Attack Anticipate
+index:1
+bounds:1337,104,116,172
+offsets:59,11,239,219
+Attack Anticipate
+index:2
+bounds:235,183,141,129
+offsets:28,10,239,219
+Attack Anticipate
+index:0
+bounds:1777,205,103,189
+offsets:76,10,239,219
+Attack Cooldown
+bounds:1913,348,131,162
+offsets:35,11,239,219
+Attack Lunge
+index:8
+bounds:1030,394,182,116
+offsets:1,12,239,219
+Attack Lunge
+index:4
+bounds:1030,394,182,116
+offsets:1,12,239,219
+Attack Lunge
+index:0
+bounds:1030,394,182,116
+offsets:1,12,239,219
+Attack Lunge
+index:11
+bounds:853,164,172,103
+offsets:1,12,239,219
+Attack Lunge
+index:7
+bounds:853,164,172,103
+offsets:1,12,239,219
+Attack Lunge
+index:3
+bounds:853,164,172,103
+offsets:1,12,239,219
+Attack Lunge
+index:5
+bounds:1030,290,171,102
+offsets:3,16,239,219
+Attack Lunge
+index:9
+bounds:1030,290,171,102
+offsets:3,16,239,219
+Attack Lunge
+index:1
+bounds:1030,290,171,102
+offsets:3,16,239,219
+Attack Lunge
+index:10
+bounds:1203,278,169,113
+offsets:1,13,239,219
+Attack Lunge
+index:2
+bounds:1203,278,169,113
+offsets:1,13,239,219
+Attack Lunge
+index:6
+bounds:1203,278,169,113
+offsets:1,13,239,219
+Death Air
+bounds:1029,157,153,131
+offsets:63,27,239,219
+Death Land
+index:6
+bounds:2,391,231,119
+offsets:1,7,239,219
+Death Land
+index:7
+bounds:2,277,231,112
+offsets:5,7,239,219
+Death Land
+index:5
+bounds:853,384,175,126
+offsets:62,7,239,219
+Death Land
+index:4
+bounds:1214,393,174,117
+offsets:65,7,239,219
+Death Land
+index:2
+bounds:1390,389,172,121
+offsets:51,6,239,219
+Death Land
+index:1
+bounds:1564,393,172,117
+offsets:62,7,239,219
+Death Land
+index:3
+bounds:1738,396,173,114
+offsets:62,7,239,219
+Death Land
+index:0
+bounds:853,269,174,113
+offsets:65,7,239,219
+Idle
+index:1
+bounds:235,314,113,196
+offsets:64,7,239,219
+Idle
+index:0
+bounds:2,78,110,197
+offsets:68,7,239,219
+Idle
+index:2
+bounds:350,316,113,194
+offsets:63,7,239,219
+Idle
+index:3
+bounds:114,84,114,191
+offsets:64,7,239,219
+Idle
+index:5
+bounds:508,136,111,192
+offsets:69,7,239,219
+Idle
+index:4
+bounds:1560,34,113,190
+offsets:65,7,239,219
+Turn
+index:1
+bounds:1455,84,103,194
+offsets:74,12,239,219
+Turn
+index:0
+bounds:1675,29,100,195
+offsets:76,11,239,219
+Walk
+index:5
+bounds:465,330,125,180
+offsets:53,12,239,219
+Walk
+index:4
+bounds:592,333,127,177
+offsets:50,12,239,219
+Walk
+index:3
+bounds:721,337,130,173
+offsets:46,11,239,219
+Walk
+index:0
+bounds:721,166,130,169
+offsets:45,11,239,219
+Walk
+index:1
+bounds:230,2,134,160
+offsets:39,11,239,219
+Walk
+index:6
+bounds:378,141,128,173
+offsets:48,12,239,219
+Walk
+index:2
+bounds:1564,226,135,165
+offsets:40,11,239,219

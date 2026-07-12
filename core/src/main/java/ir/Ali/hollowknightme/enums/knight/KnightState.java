@@ -1,0 +1,10 @@
+package ir.Ali.hollowknightme.enums.knight;
+
+public enum KnightState {
+    AIRBORNE, DASH, DEATH, DOUBLE_JUMP, DOWN_SLASH,
+    FIREBALL_CAST, FOCUS_END, FOCUS_GET, FOCUS_START, FOCUS,
+    IDLE_HURT, IDLE, LANDING, LOOK_DOWN, LOOK_UP,
+    RUN, SCREAM, SLASH, SLASH_ALT, UP_SLASH,
+    WALL_SLIDE, WALL_JUMP , TRANSITION
+    ;
+}

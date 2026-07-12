@@ -1,0 +1,116 @@
+{
+"com.badlogic.gdx.graphics.g2d.BitmapFont": {
+	"cinzel": {
+		"file": "cinzel.fnt",
+		"scaledSize": 22,
+		"markupEnabled": false,
+		"flip": false
+	},
+	"cinzel18": {
+		"file": "cinzel.fnt",
+		"scaledSize": 18,
+		"markupEnabled": false,
+		"flip": false
+	},
+	"cinzel48": {
+		"file": "cinzel.fnt",
+		"scaledSize": 48,
+		"markupEnabled": false,
+		"flip": false
+	}
+},
+"com.badlogic.gdx.graphics.Color": {
+	"Accent": {
+		"r": 0.30980393,
+		"g": 0.3647059,
+		"b": 0.54901963,
+		"a": 1
+	},
+	"Accent-light": {
+		"r": 0.6745098,
+		"g": 0.8,
+		"b": 0.8509804,
+		"a": 1
+	},
+	"Background": {
+		"r": 0.05882353,
+		"g": 0.05882353,
+		"b": 0.105882354,
+		"a": 1
+	},
+	"Border": {
+		"r": 0.9098039,
+		"g": 0.9098039,
+		"b": 0.9098039,
+		"a": 1
+	},
+	"Panel": {
+		"r": 0.105882354,
+		"g": 0.11372549,
+		"b": 0.18431373,
+		"a": 1
+	},
+	"Text": {
+		"r": 0.9607843,
+		"g": 0.9607843,
+		"b": 0.9607843,
+		"a": 1
+	}
+},
+"com.badlogic.gdx.scenes.scene2d.ui.CheckBox$CheckBoxStyle": {
+	"default": {
+		"checkboxOn": "box_on",
+		"checkboxOff": "box_off",
+		"font": "cinzel18",
+		"fontColor": "Text"
+	}
+},
+"com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle": {
+	"default": {
+		"font": "cinzel18",
+		"fontColor": "Border"
+	},
+	"Title": {
+		"font": "cinzel48",
+		"fontColor": "Text"
+	},
+	"Text": {
+		"font": "cinzel",
+		"fontColor": "Text"
+	}
+},
+"com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle": {
+	"default": {
+		"hScroll": "slider_back",
+		"hScrollKnob": "slider_knob",
+		"vScroll": "slider_backV",
+		"vScrollKnob": "slider_knobV"
+	},
+	"scroll": {
+		"vScroll": "slider_backV",
+		"vScrollKnob": "slider_knobV"
+	}
+},
+"com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle": {
+	"slider": {
+		"background": "slider_back",
+		"knob": "slider_knob"
+	}
+},
+"com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle": {
+	"default": {
+		"font": "cinzel"
+	},
+	"menu": {
+		"font": "cinzel",
+		"fontColor": "Text",
+		"downFontColor": "Border",
+		"overFontColor": "Text"
+	}
+},
+"com.badlogic.gdx.scenes.scene2d.ui.TextTooltip$TextTooltipStyle": {
+	"default": {
+		"label": "default"
+	}
+}
+}

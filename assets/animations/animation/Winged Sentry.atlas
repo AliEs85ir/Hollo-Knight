@@ -1,0 +1,96 @@
+Winged Sentry.png
+size:2048,1024
+filter:Linear,Linear
+repeat:none
+Charge
+index:0
+bounds:383,858,388,152
+offsets:5,189,509,398
+Charge
+index:2
+bounds:773,863,388,147
+offsets:4,186,509,398
+Charge
+index:1
+bounds:1163,866,388,144
+offsets:3,189,509,398
+Charge Antic
+index:3
+bounds:2,818,379,192
+offsets:1,167,509,398
+Charge Antic
+index:2
+bounds:1878,701,166,309
+offsets:152,83,509,398
+Charge Antic
+index:0
+bounds:773,629,274,232
+offsets:54,141,509,398
+Charge Antic
+index:1
+bounds:1049,560,159,301
+offsets:165,87,509,398
+Death Air
+index:0
+bounds:2,2,157,165
+offsets:165,181,509,398
+Death Air
+index:1
+bounds:161,15,150,152
+offsets:162,190,509,398
+Death Land
+index:0
+bounds:1468,687,175,109
+offsets:189,171,509,398
+Death Land
+index:3
+bounds:1645,704,183,92
+offsets:187,171,509,398
+Death Land
+index:2
+bounds:1468,591,164,94
+offsets:201,171,509,398
+Death Land
+index:1
+bounds:1429,464,155,125
+offsets:186,173,509,398
+Idle
+index:0
+bounds:2,388,327,213
+offsets:61,165,509,398
+Idle
+index:5
+bounds:2,169,319,217
+offsets:65,164,509,398
+Idle
+index:1
+bounds:1553,798,323,212
+offsets:65,169,509,398
+Idle
+index:6
+bounds:383,653,322,203
+offsets:64,170,509,398
+Idle
+index:2
+bounds:331,436,315,215
+offsets:69,166,509,398
+Idle
+index:4
+bounds:331,228,316,206
+offsets:67,168,509,398
+Idle
+index:3
+bounds:323,12,314,214
+offsets:69,164,509,398
+Turn To Fly
+index:2
+bounds:2,603,327,213
+offsets:121,165,509,398
+Turn To Fly
+index:1
+bounds:1210,663,256,201
+offsets:160,176,509,398
+Turn To Fly
+index:0
+bounds:1210,479,217,182
+offsets:131,182,509,398

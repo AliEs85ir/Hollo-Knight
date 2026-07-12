@@ -1,0 +1,763 @@
+{
+    "activeFile": "white_lights.tsx",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
+        "7.tsx": {
+            "scaleInDock": 0.25,
+            "scaleInEditor": 1
+        },
+        "927-2@2x.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "BGRoom2.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight sprites 1.5.12459 (Nintendo Switch 2 edition)/room1.tmx": {
+            "expandedObjectLayers": [
+                7
+            ],
+            "scale": 0.5,
+            "selectedLayer": 6,
+            "viewCenter": {
+                "x": 910,
+                "y": 377
+            }
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight sprites 1.5.12459 (Nintendo Switch 2 edition)/room1.tmx#BG": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight sprites 1.5.12459 (Nintendo Switch 2 edition)/room1.tmx#Well": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight sprites 1.5.12459 (Nintendo Switch 2 edition)/room1.tmx#WellBottom": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight sprites 1.5.12459 (Nintendo Switch 2 edition)/room1.tmx#back element 1": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight sprites 1.5.12459 (Nintendo Switch 2 edition)/room1.tmx#back element 2": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight sprites 1.5.12459 (Nintendo Switch 2 edition)/room1.tmx#bg": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight sprites 1.5.12459 (Nintendo Switch 2 edition)/room1.tmx#egg": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight sprites 1.5.12459 (Nintendo Switch 2 edition)/room1.tmx#floor": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight sprites 1.5.12459 (Nintendo Switch 2 edition)/room1.tmx#floor2": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight sprites 1.5.12459 (Nintendo Switch 2 edition)/room1.tmx#floor4": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight sprites 1.5.12459 (Nintendo Switch 2 edition)/room1.tmx#fossil1": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight sprites 1.5.12459 (Nintendo Switch 2 edition)/room1.tmx#front_Element": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight sprites 1.5.12459 (Nintendo Switch 2 edition)/room1.tmx#wallColumn": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight sprites 1.5.12459 (Nintendo Switch 2 edition)/room1.tmx#wallFloor": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight sprites 1.5.12459 (Nintendo Switch 2 edition)/room1.tmx#wallRoom2": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/927-2@2x.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/Hollow Knight sprites/cryst_cave_0003_Layer-7.tsx": {
+            "scaleInDock": 0.25,
+            "scaleInEditor": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/Hollow Knight sprites/floor.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/Hollow Knight sprites/room1.tmx#floor2": {
+            "dynamicWrapping": false
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/Hollow Knight/assets/map/floor.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/bossRoom.tmx": {
+            "expandedObjectLayers": [
+                2,
+                3
+            ],
+            "scale": 0.25,
+            "selectedLayer": 12,
+            "viewCenter": {
+                "x": 1680,
+                "y": 578
+            }
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/new_city_entrance_trimmed_0001_4.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/new_city_entrance_trimmed_0002_3.tsx": {
+            "scaleInDock": 0.33,
+            "scaleInEditor": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx": {
+            "expandedObjectLayers": [
+                8,
+                7
+            ],
+            "scale": 0.33,
+            "selectedLayer": 8,
+            "viewCenter": {
+                "x": 1030.3030303030303,
+                "y": 992.4242424242425
+            }
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx#BG": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx#Well": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx#WellBottom": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx#back element 1": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx#back element 2": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx#bg": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx#egg": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx#floor2": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx#floor4": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx#fossil1": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx#front_Element": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx#wallColumn": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx#wallFloor": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx#wallRoom2": {
+            "scaleInDock": 1
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room2.tmx": {
+            "expandedObjectLayers": [
+                12,
+                13
+            ],
+            "scale": 0.33,
+            "selectedLayer": 12,
+            "viewCenter": {
+                "x": 1921.2121212121212,
+                "y": 580.3030303030304
+            }
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room3.tmx": {
+            "expandedObjectLayers": [
+                9,
+                8
+            ],
+            "scale": 0.33,
+            "selectedLayer": 9,
+            "viewCenter": {
+                "x": 2400,
+                "y": 798.4848484848483
+            }
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room4.tmx": {
+            "expandedObjectLayers": [
+                15,
+                16
+            ],
+            "scale": 0.25,
+            "selectedLayer": 15,
+            "viewCenter": {
+                "x": 2228,
+                "y": 358
+            }
+        },
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room5.tmx": {
+            "expandedObjectLayers": [
+                12,
+                13
+            ],
+            "scale": 0.33,
+            "selectedLayer": 12,
+            "viewCenter": {
+                "x": 2400,
+                "y": 801.5151515151513
+            }
+        },
+        "Ruins_Houses_0004_1bg.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Well.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "WellBottom.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "_0015_city_break.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "_0018_city_break.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "_0022_city_break.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "_0030_city_break.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "_0032_city_break.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "_0081_fountain.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "_0082_fountain.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "_0083_fountain.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "_0084_fountain.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "_0106_jar.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "_0112_jar.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "_0116_jar.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "amelitia_flowers_0001_7.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.25,
+            "scaleInEditor": 1
+        },
+        "antique dealer door.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "antique_r_0003_a.tsx": {
+            "scaleInDock": 0.33,
+            "scaleInEditor": 1
+        },
+        "antique_r_0009_a.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "back element 1.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "back element 2.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "back.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 0.12
+        },
+        "bath_house_0006_bath_stone_04.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "bathhouse_bouquet_0000_8.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "bg.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "bg1.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 0.12
+        },
+        "bg11.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "bg3.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 0.33
+        },
+        "bg5.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "bg6.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.25,
+            "scaleInEditor": 1
+        },
+        "bg_highway_bridge_0000_5.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "blacksmith_hut_exterior.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "book_piles_0004_a.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "bossRoom.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 0.33,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 1787.8787878787878,
+                "y": 765.1515151515152
+            }
+        },
+        "cd_spikes_BG.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 0.12
+        },
+        "crys_cave_small_BG.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "cryst_cave_0004_Layer-6.tsx": {
+            "scaleInDock": 0.25,
+            "scaleInEditor": 1
+        },
+        "eggRoom2.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "far_bg_mines_plats_0000_5.tsx": {
+            "scaleInDock": 0.25,
+            "scaleInEditor": 1
+        },
+        "floor.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "floor2Room2.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "floor34.tsx": {
+            "scaleInDock": 0.25
+        },
+        "floor3Room2.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "floor4Room2.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "floorCC.tsx": {
+            "scaleInDock": 0.25,
+            "scaleInEditor": 1
+        },
+        "floorRoom2.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "fossil1Room2.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "frontElement.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "front_element.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "jar_col_FG.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "jar_col_bg_bottle.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "jar_col_floor_black.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "jarcol_floor.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "king_shrine.tsx": {
+            "scaleInDock": 0.25,
+            "scaleInEditor": 1
+        },
+        "mage_computer_01.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "mage_lord_room_0002_floor.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "mantis_lord_scene_spike1.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "map.tmx": {
+            "expandedObjectLayers": [
+                7
+            ],
+            "scale": 0.5,
+            "selectedLayer": 6,
+            "viewCenter": {
+                "x": 910,
+                "y": 377
+            }
+        },
+        "map.tmx#BG": {
+            "scaleInDock": 1
+        },
+        "map.tmx#Well": {
+            "scaleInDock": 1
+        },
+        "map.tmx#WellBottom": {
+            "scaleInDock": 1
+        },
+        "map.tmx#back element 1": {
+            "scaleInDock": 1
+        },
+        "map.tmx#back element 2": {
+            "scaleInDock": 1
+        },
+        "map.tmx#bg": {
+            "scaleInDock": 1
+        },
+        "map.tmx#egg": {
+            "scaleInDock": 1
+        },
+        "map.tmx#floor": {
+            "scaleInDock": 1
+        },
+        "map.tmx#floor2": {
+            "scaleInDock": 1
+        },
+        "map.tmx#floor4": {
+            "scaleInDock": 1
+        },
+        "map.tmx#fossil1": {
+            "scaleInDock": 1
+        },
+        "map.tmx#front_Element": {
+            "scaleInDock": 1
+        },
+        "map.tmx#wallColumn": {
+            "scaleInDock": 1
+        },
+        "map.tmx#wallFloor": {
+            "scaleInDock": 1
+        },
+        "map.tmx#wallRoom2": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "mine_break_wall.tsx": {
+            "scaleInDock": 0.25,
+            "scaleInEditor": 1
+        },
+        "mine_crystal_08.tsx": {
+            "scaleInDock": 0.25,
+            "scaleInEditor": 1
+        },
+        "mine_spike_02.tsx": {
+            "scaleInDock": 0.25,
+            "scaleInEditor": 1
+        },
+        "mine_strut_01 #80622.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "mine_strut_05 #61906.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "mine_strut_07_BG.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "mines_additions_02_0010_a.tsx": {
+            "scaleInDock": 0.25,
+            "scaleInEditor": 1
+        },
+        "new_city_entrance_trimmed_0001_4.tsx": {
+            "scaleInDock": 0.33,
+            "scaleInEditor": 1
+        },
+        "rain.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "rain2.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "rec_elev_0015_bath_sign.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "rec_elev_0017_poster.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "room2.tmx": {
+            "expandedObjectLayers": [
+                2,
+                12
+            ],
+            "scale": 0.25,
+            "selectedLayer": 9,
+            "viewCenter": {
+                "x": 2124,
+                "y": 190
+            }
+        },
+        "ruin_add_girder.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "ruin_house_brick.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ruin_layered_0013_f.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ruin_layered_0054_w.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ruin_layered_0059_Layer-85.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "ruin_layered_0085_l.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "ruin_plat_float_05_wide.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ruin_plat_float_06.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ruind_bridge_base_01.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "ruind_bridge_roof_03.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "ruind_bridge_roof_04_spikes.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ruind_bridge_roof_arch_01.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "ruind_dressing_light_03.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "ruind_wall_symbol_01.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ruins_additions_0005_a.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "ruins_additions_0016_a.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ruins_clutter_0006_a_bits_0001_a.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ruins_plat_royal_02.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ruins_red__0018_a.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ruins_resting_extra_bits_0032_Layer-134.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "ruins_resting_extra_bits_0081_Layer-183.tsx": {
+            "scaleInDock": 0.75,
+            "scaleInEditor": 1
+        },
+        "ruins_watcher_desk_0000_4.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "spick02.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 0.12
+        },
+        "spick3.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 0.12
+        },
+        "spike1.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 0.12
+        },
+        "spike4.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 0.12
+        },
+        "spikeAnime.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 0.33
+        },
+        "vine_01.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 0.12
+        },
+        "wallColumn.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "wallFloor.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "wallRoom2.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "wallpaper.tsx": {
+            "scaleInDock": 0.25,
+            "scaleInEditor": 1
+        },
+        "watcher_room_0009_4.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "watcher_room_0013_telescope.tsx": {
+            "scaleInDock": 256,
+            "scaleInEditor": 1
+        },
+        "watcher_room_0014_chair.tsx": {
+            "scaleInDock": 0.75,
+            "scaleInEditor": 1
+        },
+        "white_lights.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        }
+    },
+    "frame.defaultDuration": 200,
+    "last.externalTilesetPath": "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/map",
+    "last.imagePath": "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/Hollow Knight sprites/Architecture & Environment/Area specfic architecture/Crystal Peak",
+    "map.height": 200,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 8,
+    "map.tileWidth": 8,
+    "map.width": 600,
+    "openFiles": [
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx",
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room2.tmx",
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room3.tmx",
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room4.tmx",
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room5.tmx",
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/bossRoom.tmx",
+        "white_lights.tsx"
+    ],
+    "project": "map.tiled-project",
+    "property.type": "bool",
+    "recentFiles": [
+        "white_lights.tsx",
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room1.tmx",
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room2.tmx",
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room3.tmx",
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room4.tmx",
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/room5.tmx",
+        "E:/Sharif_Univercity/code/AP/E3/Hollow Knight/assets/bossRoom.tmx",
+        "crys_cave_small_BG.tsx",
+        "mine_strut_05 #61906.tsx",
+        "mine_strut_07_BG.tsx",
+        "mine_strut_01 #80622.tsx",
+        "cryst_cave_0004_Layer-6.tsx"
+    ],
+    "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 8,
+        "width": 8
+    }
+}

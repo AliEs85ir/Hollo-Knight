@@ -1,0 +1,16 @@
+DegradableWall.png
+size:2048,2048
+repeat:none
+Normal
+index:0
+bounds:2,2,1583,931
+SecondDestruction
+index:0
+bounds:2,935,1583,931
+
+DegradableWall2.png
+size:2048,1024
+repeat:none
+FirstDestruction
+index:0
+bounds:2,2,1583,931

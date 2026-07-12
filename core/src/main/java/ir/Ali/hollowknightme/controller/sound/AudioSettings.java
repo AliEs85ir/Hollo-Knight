@@ -1,0 +1,67 @@
+package ir.Ali.hollowknightme.controller.sound;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
+
+public class AudioSettings {
+    private static final String PREF_NAME = "AudioSettings";
+
+    private float masterVolume;
+    private float musicVolume;
+    private float sfxVolume;
+
+    private boolean masterMute;
+    private boolean musicMute;
+    private boolean sfxMute;
+
+    public void load() {
+        Preferences prefs = Gdx.app.getPreferences(PREF_NAME);
+        masterVolume = prefs.getFloat("masterVolume", 1.0f);
+        musicVolume = prefs.getFloat("musicVolume", 1.0f);
+        sfxVolume = prefs.getFloat("sfxVolume", 1.0f);
+
+        masterMute = prefs.getBoolean("masterMute", false);
+        musicMute = prefs.getBoolean("musicMute", false);
+        sfxMute = prefs.getBoolean("sfxMute", false);
+    }
+
+    public void save() {
+        Preferences prefs = Gdx.app.getPreferences(PREF_NAME);
+        prefs.putFloat("masterVolume", masterVolume);
+        prefs.putFloat("musicVolume", musicVolume);
+        prefs.putFloat("sfxVolume", sfxVolume);
+
+        prefs.putBoolean("masterMute", masterMute);
+        prefs.putBoolean("musicMute", musicMute);
+        prefs.putBoolean("sfxMute", sfxMute);
+
+        prefs.flush();
+    }
+
+    public void reset() {
+        masterVolume = 1.0f;
+        musicVolume = 1.0f;
+        sfxVolume = 1.0f;
+        masterMute = false;
+        musicMute = false;
+        sfxMute = false;
+    }
+
+    public float getMasterVolume() { return masterMute ? 0f : masterVolume; }
+    public void setMasterVolume(float masterVolume) { this.masterVolume = masterVolume; }
+
+    public float getMusicVolume() { return musicMute ? 0f : musicVolume; }
+    public void setMusicVolume(float musicVolume) { this.musicVolume = musicVolume; }
+
+    public float getSfxVolume() { return sfxMute ? 0f : sfxVolume; }
+    public void setSfxVolume(float sfxVolume) { this.sfxVolume = sfxVolume; }
+
+    public boolean isMasterMute() { return masterMute; }
+    public void setMasterMute(boolean masterMute) { this.masterMute = masterMute; }
+
+    public boolean isMusicMute() { return musicMute; }
+    public void setMusicMute(boolean musicMute) { this.musicMute = musicMute; }
+
+    public boolean isSfxMute() { return sfxMute; }
+    public void setSfxMute(boolean sfxMute) { this.sfxMute = sfxMute; }
+}
