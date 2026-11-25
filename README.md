@@ -1,33 +1,86 @@
-# HollowKnight
+# Hollow Knight — پروژهٔ بازی دوبعدی
 
-A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
+یک بازی اکشن و پلتفرمر دوبعدی الهام‌گرفته از **Hollow Knight** که با Java و [libGDX](https://libgdx.com/) برای دسکتاپ ساخته شده است. بازیکن در نقش Knight میان اتاق‌ها حرکت می‌کند، با دشمنان می‌جنگد، از موانع عبور می‌کند و با باس False Knight روبه‌رو می‌شود.
 
-This project was generated with a template including simple application launchers and an `ApplicationAdapter` extension that draws libGDX logo.
+## ویژگی‌ها
 
-## Platforms
+- حرکت، پرش دوبل، دش، سر خوردن روی دیوار و حملهٔ Nail در جهت‌های مختلف
+- سیستم مبارزه با دشمنان Crawlid، Husk Hornhead، Winged Sentry و Crystal Guardian، به‌همراه باس False Knight
+- سلامتی بر پایهٔ Mask و انرژی Soul؛ امکان بازیابی سلامتی با نگه داشتن کلید Focus
+- شش Charm قابل تجهیز با ظرفیت عادی سه جایگاه
+- نقشه‌های ساخته‌شده با Tiled، فیزیک و برخوردها با Box2D، و جابه‌جایی میان اتاق‌ها
+- منوی اصلی، راهنمای داخل بازی، تنظیمات صدا و روشنایی، فهرست دستاوردها و پنجرهٔ Inventory
+- چهار جایگاه ذخیرهٔ بازی با امکان ادامه دادن یا حذف ذخیره؛ ثبت زمان بازی، مرگ‌ها، تعداد دشمنان شکست‌خورده و دستاوردها
 
-- `core`: Main module with the application logic shared by all platforms.
-- `lwjgl3`: Primary desktop platform using LWJGL3; was called 'desktop' in older docs.
+## پیش‌نیازها و اجرا
 
-## Gradle
+- **JDK 25** مطابق تنظیمات `build.gradle`
+- Gradle جداگانه لازم نیست؛ Gradle Wrapper در مخزن وجود دارد.
+- برای اجرای گرافیکی، محیط دسکتاپ با پشتیبانی OpenGL لازم است.
 
-This project uses [Gradle](https://gradle.org/) to manage dependencies.
-The Gradle wrapper was included, so you can run Gradle tasks using `gradlew.bat` or `./gradlew` commands.
-Useful Gradle tasks and flags:
+```powershell
+git clone https://github.com/AliEs85ir/Hollo-Knight.git
+cd Hollo-Knight
+.\gradlew.bat :lwjgl3:run
+```
 
-- `--continue`: when using this flag, errors will not stop the tasks from running.
-- `--daemon`: thanks to this flag, Gradle daemon will be used to run chosen tasks.
-- `--offline`: when using this flag, cached dependency archives will be used.
-- `--refresh-dependencies`: this flag forces validation of all dependencies. Useful for snapshot versions.
-- `build`: builds sources and archives of every project.
-- `cleanEclipse`: removes Eclipse project data.
-- `cleanIdea`: removes IntelliJ project data.
-- `clean`: removes `build` folders, which store compiled classes and built archives.
-- `eclipse`: generates Eclipse project data.
-- `idea`: generates IntelliJ project data.
-- `lwjgl3:jar`: builds application's runnable jar, which can be found at `lwjgl3/build/libs`.
-- `lwjgl3:run`: starts the application.
-- `test`: runs unit tests (if any).
+در Linux یا macOS، به‌جای دستور آخر از `./gradlew :lwjgl3:run` استفاده کنید. اولین اجرا ممکن است وابستگی‌های Gradle را دریافت کند.
 
-Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should be replaced with the ID of a specific project.
-For example, `core:clean` removes `build` folder only from the `core` project.
+برای ساخت فایل JAR:
+
+```powershell
+.\gradlew.bat :lwjgl3:jar
+```
+
+خروجی در `lwjgl3/build/libs/` قرار می‌گیرد. فایل JAR شامل وابستگی‌ها و منابع `assets` است.
+
+## کنترل‌های پیش‌فرض
+
+- **← / →:** حرکت افقی
+- **↑:** پرش؛ فشردن دوباره در هوا برای پرش دوبل
+- **Shift چپ:** دش
+- **X:** حمله با Nail؛ همراه با `W` برای ضربهٔ رو به بالا یا `S` در هوا برای ضربهٔ رو به پایین
+- **A (نگه داشتن):** Focus و بازیابی سلامتی با مصرف Soul
+- **I:** باز و بسته کردن Inventory و مدیریت Charmها
+- **Space:** باز کردن منوی توقف بازی
+
+کلیدهای پیش‌فرض از `ControlManager` و رفتار منوها از `GameScreen` استخراج شده‌اند. متن راهنمای داخل بازی در برخی موارد، از جمله کلید توقف، با پیاده‌سازی فعلی تفاوت دارد.
+
+### میان‌برهای آزمایشی
+
+این کلیدها در کد برای آزمایش بازی در نظر گرفته شده‌اند:
+
+- `Ctrl + S`: انتقال به اتاق باس
+- `Ctrl + F`: تغییر وضعیت حرکت آزاد (Noclip)
+- `Ctrl + E`: افزودن یک Mask سلامتی
+- `Ctrl + D`: پر کردن Soul
+- `Ctrl + G`: تغییر وضعیت God Mode
+- `Ctrl + T`: تجهیز همهٔ Charmها
+
+## ذخیرهٔ پیشرفت
+
+از منوی توقف، گزینهٔ **Save & Exit** پیشرفت فعلی را ذخیره و بازی را به منوی اصلی برمی‌گرداند. ذخیره‌ها با قالب JSON در مسیر محلی `hollow_saves/slot_<number>.json` نوشته می‌شوند. این مسیر نسبت به دایرکتوری کاری برنامه است؛ هنگام اجرای Gradle، دایرکتوری کاری `assets/` تنظیم شده است. تنظیمات صدا و روشنایی جداگانه با Preferences ذخیره می‌شوند.
+
+## ساختار پروژه
+
+```text
+core/       منطق بازی، مدل‌ها، کنترلرها، رابط کاربری و سیستم ذخیره
+lwjgl3/     راه‌انداز دسکتاپ، تنظیمات اجرا و ساخت JAR
+assets/     نقشه‌ها، تصاویر، انیمیشن‌ها، صداها و داده‌های رابط کاربری
+gradle/     فایل‌های Gradle Wrapper
+```
+
+کلاس ورود دسکتاپ `Lwjgl3Launcher` است. ماژول `core` منطق و نمایش بازی را نگه می‌دارد و ماژول `lwjgl3` آن را با LWJGL3 اجرا می‌کند. نسخه‌های اصلی تنظیم‌شده در پروژه: **libGDX 1.14.2** و **LWJGL 3.4.1**.
+
+## محدودیت‌های فعلی
+
+- راهنمای داخل بازی از `Esc` برای توقف و از قابلیت‌های دیگری نام می‌برد که همهٔ آن‌ها در مسیر کنترل فعلی دیده نمی‌شوند؛ برای کنترل‌های قابل اتکا، بخش بالا و کد را مبنا قرار دهید.
+- فایل مجوزی در مخزن ثبت نشده است. این پروژه یک کار غیررسمی الهام‌گرفته از Hollow Knight است؛ پیش از بازنشر کد یا دارایی‌های تصویری و صوتی، وضعیت حقوق استفاده از آن‌ها را بررسی کنید.
+
+## توسعه
+
+برای تغییر رفتار بازی، کد `core/src/main/java/ir/Ali/hollowknightme/` را بررسی کنید. نقشه‌ها و دارایی‌ها در `assets/` قرار دارند. پس از تغییرات کد، می‌توان کامپایل ماژول دسکتاپ را با دستور زیر بررسی کرد:
+
+```powershell
+.\gradlew.bat :lwjgl3:compileJava
+```
