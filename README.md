@@ -1,22 +1,28 @@
-# Hollow Knight — پروژهٔ بازی دوبعدی
+# Hollow Knight — 2D Game Project
 
-یک بازی اکشن و پلتفرمر دوبعدی الهام‌گرفته از **Hollow Knight** که با Java و [libGDX](https://libgdx.com/) برای دسکتاپ ساخته شده است. بازیکن در نقش Knight میان اتاق‌ها حرکت می‌کند، با دشمنان می‌جنگد، از موانع عبور می‌کند و با باس False Knight روبه‌رو می‌شود.
+A desktop action platformer inspired by **Hollow Knight**, built with Java and [libGDX](https://libgdx.com/). Play as the Knight, explore connected rooms, fight enemies, navigate platforming challenges, and face the False Knight boss.
 
-## ویژگی‌ها
+> This is an unofficial fan project. It is not affiliated with the creators of Hollow Knight.
 
-- حرکت، پرش دوبل، دش، سر خوردن روی دیوار و حملهٔ Nail در جهت‌های مختلف
-- سیستم مبارزه با دشمنان Crawlid، Husk Hornhead، Winged Sentry و Crystal Guardian، به‌همراه باس False Knight
-- سلامتی بر پایهٔ Mask و انرژی Soul؛ امکان بازیابی سلامتی با نگه داشتن کلید Focus
-- شش Charm قابل تجهیز با ظرفیت عادی سه جایگاه
-- نقشه‌های ساخته‌شده با Tiled، فیزیک و برخوردها با Box2D، و جابه‌جایی میان اتاق‌ها
-- منوی اصلی، راهنمای داخل بازی، تنظیمات صدا و روشنایی، فهرست دستاوردها و پنجرهٔ Inventory
-- چهار جایگاه ذخیرهٔ بازی با امکان ادامه دادن یا حذف ذخیره؛ ثبت زمان بازی، مرگ‌ها، تعداد دشمنان شکست‌خورده و دستاوردها
+## Features
 
-## پیش‌نیازها و اجرا
+- Knight movement, double jump, dash, wall slide, and directional Nail attacks
+- Combat against Crawlid, Husk Hornhead, Winged Sentry, and Crystal Guardian enemies, plus the False Knight boss
+- Mask based health and Soul; hold Focus to spend Soul and recover health
+- Six Charms, with three normal equipment slots
+- Tiled maps, Box2D physics and collision handling, and room transitions
+- Main menu, in-game guide, inventory, achievements, and audio and brightness settings
+- Four save slots that record location, health, Soul, play time, deaths, enemy kills, and achievements
 
-- **JDK 25** مطابق تنظیمات `build.gradle`
-- Gradle جداگانه لازم نیست؛ Gradle Wrapper در مخزن وجود دارد.
-- برای اجرای گرافیکی، محیط دسکتاپ با پشتیبانی OpenGL لازم است.
+## Requirements
+
+- **JDK 25**, as configured in `build.gradle`
+- A desktop environment with OpenGL support
+- No separate Gradle installation; the repository includes the Gradle Wrapper
+
+## Run the game
+
+On Windows:
 
 ```powershell
 git clone https://github.com/AliEs85ir/Hollo-Knight.git
@@ -24,63 +30,63 @@ cd Hollo-Knight
 .\gradlew.bat :lwjgl3:run
 ```
 
-در Linux یا macOS، به‌جای دستور آخر از `./gradlew :lwjgl3:run` استفاده کنید. اولین اجرا ممکن است وابستگی‌های Gradle را دریافت کند.
+On Linux or macOS, use `./gradlew :lwjgl3:run` instead. The first build may download dependencies. The Gradle run task uses `assets/` as its working directory, where the maps are located.
 
-برای ساخت فایل JAR:
+To build an executable JAR:
 
 ```powershell
 .\gradlew.bat :lwjgl3:jar
 ```
 
-خروجی در `lwjgl3/build/libs/` قرار می‌گیرد. فایل JAR شامل وابستگی‌ها و منابع `assets` است.
+The output is written to `lwjgl3/build/libs/`. The JAR packages the runtime dependencies and assets.
 
-## کنترل‌های پیش‌فرض
+## Default controls
 
-- **← / →:** حرکت افقی
-- **↑:** پرش؛ فشردن دوباره در هوا برای پرش دوبل
-- **Shift چپ:** دش
-- **X:** حمله با Nail؛ همراه با `W` برای ضربهٔ رو به بالا یا `S` در هوا برای ضربهٔ رو به پایین
-- **A (نگه داشتن):** Focus و بازیابی سلامتی با مصرف Soul
-- **I:** باز و بسته کردن Inventory و مدیریت Charmها
-- **Space:** باز کردن منوی توقف بازی
+- **Left / Right Arrow:** Move
+- **Up Arrow:** Jump; press again in the air for a double jump
+- **Left Shift:** Dash
+- **X:** Nail attack; hold `W` for an upward slash or `S` while airborne for a downward slash
+- **A (hold):** Focus to heal using Soul
+- **I:** Open or close the Charm inventory
+- **Space:** Open the pause menu
 
-کلیدهای پیش‌فرض از `ControlManager` و رفتار منوها از `GameScreen` استخراج شده‌اند. متن راهنمای داخل بازی در برخی موارد، از جمله کلید توقف، با پیاده‌سازی فعلی تفاوت دارد.
+These bindings come from `ControlManager` and `GameScreen`. The in-game guide currently lists `Esc` for pause, but the implemented key is `Space`.
 
-### میان‌برهای آزمایشی
+### Debug shortcuts
 
-این کلیدها در کد برای آزمایش بازی در نظر گرفته شده‌اند:
+- `Ctrl + S`: Teleport to the boss room
+- `Ctrl + F`: Toggle free movement (Noclip)
+- `Ctrl + E`: Restore one health Mask
+- `Ctrl + D`: Refill Soul
+- `Ctrl + G`: Toggle God Mode
+- `Ctrl + T`: Equip all Charms
 
-- `Ctrl + S`: انتقال به اتاق باس
-- `Ctrl + F`: تغییر وضعیت حرکت آزاد (Noclip)
-- `Ctrl + E`: افزودن یک Mask سلامتی
-- `Ctrl + D`: پر کردن Soul
-- `Ctrl + G`: تغییر وضعیت God Mode
-- `Ctrl + T`: تجهیز همهٔ Charmها
+## Saving progress
 
-## ذخیرهٔ پیشرفت
+Choose **Save & Exit** from the pause menu to save the current run and return to the main menu. Save slots are JSON files at `hollow_saves/slot_<number>.json`, relative to the application's working directory. When launched through Gradle, that directory is `assets/`. Audio and brightness settings are stored separately using libGDX Preferences.
 
-از منوی توقف، گزینهٔ **Save & Exit** پیشرفت فعلی را ذخیره و بازی را به منوی اصلی برمی‌گرداند. ذخیره‌ها با قالب JSON در مسیر محلی `hollow_saves/slot_<number>.json` نوشته می‌شوند. این مسیر نسبت به دایرکتوری کاری برنامه است؛ هنگام اجرای Gradle، دایرکتوری کاری `assets/` تنظیم شده است. تنظیمات صدا و روشنایی جداگانه با Preferences ذخیره می‌شوند.
-
-## ساختار پروژه
+## Project layout
 
 ```text
-core/       منطق بازی، مدل‌ها، کنترلرها، رابط کاربری و سیستم ذخیره
-lwjgl3/     راه‌انداز دسکتاپ، تنظیمات اجرا و ساخت JAR
-assets/     نقشه‌ها، تصاویر، انیمیشن‌ها، صداها و داده‌های رابط کاربری
-gradle/     فایل‌های Gradle Wrapper
+core/       Game logic, models, controllers, UI, and save service
+lwjgl3/     Desktop launcher, run configuration, and JAR packaging
+assets/     Tiled maps, sprites, animations, audio, and UI assets
+gradle/     Gradle Wrapper files
 ```
 
-کلاس ورود دسکتاپ `Lwjgl3Launcher` است. ماژول `core` منطق و نمایش بازی را نگه می‌دارد و ماژول `lwjgl3` آن را با LWJGL3 اجرا می‌کند. نسخه‌های اصلی تنظیم‌شده در پروژه: **libGDX 1.14.2** و **LWJGL 3.4.1**.
+The desktop entry point is `ir.Ali.hollowknightme.lwjgl3.Lwjgl3Launcher`. The project uses libGDX **1.14.2** and LWJGL **3.4.1**.
 
-## محدودیت‌های فعلی
+## Development
 
-- راهنمای داخل بازی از `Esc` برای توقف و از قابلیت‌های دیگری نام می‌برد که همهٔ آن‌ها در مسیر کنترل فعلی دیده نمی‌شوند؛ برای کنترل‌های قابل اتکا، بخش بالا و کد را مبنا قرار دهید.
-- فایل مجوزی در مخزن ثبت نشده است. این پروژه یک کار غیررسمی الهام‌گرفته از Hollow Knight است؛ پیش از بازنشر کد یا دارایی‌های تصویری و صوتی، وضعیت حقوق استفاده از آن‌ها را بررسی کنید.
-
-## توسعه
-
-برای تغییر رفتار بازی، کد `core/src/main/java/ir/Ali/hollowknightme/` را بررسی کنید. نقشه‌ها و دارایی‌ها در `assets/` قرار دارند. پس از تغییرات کد، می‌توان کامپایل ماژول دسکتاپ را با دستور زیر بررسی کرد:
+Compile the desktop module with:
 
 ```powershell
 .\gradlew.bat :lwjgl3:compileJava
 ```
+
+The main game source is under `core/src/main/java/ir/Ali/hollowknightme/`. The Tiled maps required by the game are in the root of `assets/`.
+
+## Current limitations
+
+- Some text in the in-game guide does not match the implemented controls or features. Use the controls above and the source code as the reference for this version.
+- This repository does not contain a license file. Review the rights to the code and included visual and audio assets before redistributing them.
